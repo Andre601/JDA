@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.requests.Response;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.utils.Checks;
+import net.dv8tion.jda.internal.utils.JDALogger;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -31,8 +32,6 @@ import java.util.function.Consumer;
 /**
  * Indicates an unhandled error that is returned by Discord API Request using {@link net.dv8tion.jda.api.requests.RestAction RestAction}
  * <br>It holds an {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponse}
- *
- * @see net.dv8tion.jda.api.exceptions.ErrorHandler
  */
 public class ErrorResponseException extends RuntimeException
 {
@@ -279,6 +278,23 @@ public class ErrorResponseException extends RuntimeException
         Checks.notEmpty(set, "Ignored collection");
         // Make an enum set copy (for performance, memory efficiency, and thread-safety)
         final EnumSet<ErrorResponse> ignored = EnumSet.copyOf(set);
-        return new ErrorHandler(orElse).ignore(ignored);
+        return (throwable) ->
+        {
+            if (throwable instanceof ErrorResponseException)
+            {
+                ErrorResponseException ex = (ErrorResponseException) throwable;
+                if (ignored.contains(ex.getErrorResponse()))
+                    return;
+            }
+
+            try
+            {
+                orElse.accept(throwable);
+            }
+            catch (Exception ex)
+            {
+                JDALogger.getLog(ErrorResponseException.class).error("Uncaught exception in ignore callback", throwable);
+            }
+        };
     }
 }
