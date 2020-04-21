@@ -1325,7 +1325,7 @@ public class GuildImpl implements Guild
     public GuildImpl setOwner(Member owner)
     {
         // Only cache owner if user cache is enabled
-        if (owner != null && !owner.isFake())
+        if (!owner.isFake())
             this.owner = owner;
         return this;
     }
