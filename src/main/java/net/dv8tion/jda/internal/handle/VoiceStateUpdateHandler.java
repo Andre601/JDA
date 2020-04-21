@@ -59,7 +59,6 @@ public class VoiceStateUpdateHandler extends SocketHandler
         boolean guildMuted = content.getBoolean("mute");
         boolean guildDeafened = content.getBoolean("deaf");
         boolean suppressed = content.getBoolean("suppress");
-        boolean stream = content.getBoolean("self_stream");
 
         Guild guild = getJDA().getGuildById(guildId);
         if (guild == null)
@@ -122,17 +121,11 @@ public class VoiceStateUpdateHandler extends SocketHandler
             getJDA().getEntityBuilder().updateMemberCache(member);
             getJDA().handleEvent(new GuildVoiceSuppressEvent(getJDA(), responseNumber, member));
         }
-        if (stream != vState.isStream())
-        {
-            vState.setStream(stream);
-            getJDA().getEntityBuilder().updateMemberCache(member);
-            getJDA().handleEvent(new GuildVoiceStreamEvent(getJDA(), responseNumber, member, stream));
-        }
         if (wasMute != vState.isMuted())
             getJDA().handleEvent(new GuildVoiceMuteEvent(getJDA(), responseNumber, member));
         if (wasDeaf != vState.isDeafened())
             getJDA().handleEvent(new GuildVoiceDeafenEvent(getJDA(), responseNumber, member));
-
+            
         if (!Objects.equals(channel, vState.getChannel()))
         {
             VoiceChannelImpl oldChannel = (VoiceChannelImpl) vState.getChannel();
