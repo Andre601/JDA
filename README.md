@@ -80,7 +80,7 @@ public static void main(String[] args) {
     JDABuilder builder = JDABuilder.createDefault(args[0]);
     
     // Disable parts of the cache
-    builder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
+    builder.setDisabledCacheFlags(EnumSet.of(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE));
     // Enable the bulk delete event
     builder.setBulkDeleteSplittingEnabled(false);
     // Disable compression (not recommended)
@@ -101,7 +101,9 @@ Additionally, you can change the handling of member/user cache by setting either
 ```java
 public void configureMemoryUsage(JDABuilder builder) {
     // Disable cache for member activities (streaming/games/spotify)
-    builder.disableCache(CacheFlag.ACTIVITY);
+    builder.setDisabledCacheFlags(
+        EnumSet.of(CacheFlag.ACTIVITY)
+    );
 
     // Only cache members who are either in a voice channel or owner of the guild
     builder.setMemberCachePolicy(MemberCachePolicy.VOICE.or(MemberCachePolicy.OWNER));
@@ -110,7 +112,7 @@ public void configureMemoryUsage(JDABuilder builder) {
     builder.setChunkingFilter(ChunkingFilter.NONE);
 
     // Disable presence updates and typing events
-    builder.disabledIntents(GatewayIntent.GUILD_PRESENCE, GatewayIntent.GUILD_MESSAGE_TYPING);
+    builder.setDisabledIntents(GatewayIntent.GUILD_PRESENCE, GatewayIntent.GUILD_MESSAGE_TYPING);
 
     // Consider guilds with more than 50 members as "large". 
     // Large guilds will only provide online members in their setup and thus reduce bandwidth if chunking is disabled.
@@ -199,14 +201,7 @@ public class Bot extends ListenerAdapter
 {
     public static void main(String[] args) throws LoginException
     {
-        if (args.length < 1) {
-            System.out.println("You have to provide a token as first argument!");
-            System.exit(1);
-        }
-        // args[0] should be the token
-        // We only need 2 intents in this bot. We only respond to messages in guilds and private channels.
-        // All other events will be disabled.
-        JDABuilder.createLight(args[0], GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES)
+        JDABuilder.createDefault(args[0])
             .addEventListeners(new Bot())
             .setActivity(Activity.playing("Type !ping"))
             .build();
