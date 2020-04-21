@@ -47,16 +47,16 @@ public class FlatMapRestAction<I, O> extends RestActionOperator<I, O>
     @Override
     public void queue(@Nullable Consumer<? super O> success, @Nullable Consumer<? super Throwable> failure)
     {
-        Consumer<? super Throwable> contextFailure = contextWrap(failure);
+        Consumer<? super Throwable> onFailure = contextWrap(failure);
         action.queue((result) -> {
             if (condition != null && !condition.test(result))
                 return;
             RestAction<O> then = supply(result);
             if (then == null)
-                doFailure(contextFailure, new IllegalStateException("FlatMap operand is null"));
+                doFailure(onFailure, new IllegalStateException("FlatMap operand is null"));
             else
-                then.queue(success, contextFailure);
-        }, contextFailure);
+                then.queue(success, onFailure);
+        }, onFailure);
     }
 
     @Override
