@@ -40,7 +40,7 @@ public class UserImpl implements User
     protected short discriminator;
     protected String name;
     protected String avatarId;
-    protected long privateChannel = 0L;
+    protected PrivateChannel privateChannel;
     protected boolean bot;
     protected boolean fake = false;
 
@@ -87,33 +87,23 @@ public class UserImpl implements User
     @Override
     public boolean hasPrivateChannel()
     {
-        return privateChannel != 0;
+        return privateChannel != null;
     }
 
     @Nonnull
     @Override
     public RestAction<PrivateChannel> openPrivateChannel()
     {
-        return new DeferredRestAction<>(getJDA(), PrivateChannel.class, this::getPrivateChannel, () -> {
+        return new DeferredRestAction<>(getJDA(), PrivateChannel.class, () -> privateChannel, () -> {
             Route.CompiledRoute route = Route.Self.CREATE_PRIVATE_CHANNEL.compile();
             DataObject body = DataObject.empty().put("recipient_id", getId());
             return new RestActionImpl<>(getJDA(), route, body, (response, request) ->
             {
                 PrivateChannel priv = api.getEntityBuilder().createPrivateChannel(response.getObject(), this);
-                UserImpl.this.privateChannel = priv.getIdLong();
+                UserImpl.this.privateChannel = priv;
                 return priv;
             });
         });
-    }
-
-    public PrivateChannel getPrivateChannel()
-    {
-        if (!hasPrivateChannel())
-            return null;
-        PrivateChannel channel = getJDA().getPrivateChannelById(privateChannel);
-        if (channel == null)
-            channel = getJDA().getFakePrivateChannelMap().get(privateChannel);
-        return channel != null ? channel : new PrivateChannelImpl(privateChannel, this);
     }
 
     @Nonnull
@@ -121,6 +111,14 @@ public class UserImpl implements User
     public List<Guild> getMutualGuilds()
     {
         return getJDA().getMutualGuilds(this);
+    }
+
+    public PrivateChannel getPrivateChannel()
+    {
+        if (!hasPrivateChannel())
+            throw new IllegalStateException("There is no PrivateChannel for this user yet! Use User#openPrivateChannel() first!");
+
+        return privateChannel;
     }
 
     @Override
@@ -200,8 +198,7 @@ public class UserImpl implements User
 
     public UserImpl setPrivateChannel(PrivateChannel privateChannel)
     {
-        if (privateChannel != null)
-            this.privateChannel = privateChannel.getIdLong();
+        this.privateChannel = privateChannel;
         return this;
     }
 
