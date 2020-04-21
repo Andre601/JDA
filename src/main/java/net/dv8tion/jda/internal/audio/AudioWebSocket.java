@@ -140,8 +140,7 @@ class AudioWebSocket extends WebSocketAdapter
         }
         catch (IOException e)
         {
-            LOG.warn("Encountered IOException while attempting to connect to {}: {}\nClosing connection and attempting to reconnect.",
-                            wssEndpoint, e.getMessage());
+            LOG.warn("Encountered IOException while attempting to connect: {}\nClosing connection and attempting to reconnect.", e.getMessage());
             this.close(ConnectionStatus.ERROR_WEBSOCKET_UNABLE_TO_CONNECT);
         }
     }
@@ -374,8 +373,8 @@ class AudioWebSocket extends WebSocketAdapter
     @Override
     public void onConnectError(WebSocket webSocket, WebSocketException e)
     {
-        LOG.warn("Failed to establish websocket connection to {}: {} - {}\nClosing connection and attempting to reconnect.",
-                        wssEndpoint, e.getError(), e.getMessage());
+        LOG.warn("Failed to establish websocket connection: {} - {}\nClosing connection and attempting to reconnect.",
+                                 e.getError(), e.getMessage());
         this.close(ConnectionStatus.ERROR_WEBSOCKET_UNABLE_TO_CONNECT);
     }
 
