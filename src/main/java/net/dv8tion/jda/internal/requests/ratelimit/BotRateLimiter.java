@@ -137,12 +137,11 @@ public class BotRateLimiter extends RateLimiter
     }
 
     @Override
-    protected void stop()
+    protected void shutdown()
     {
-        super.stop();
+        super.shutdown();
         if (cleanupWorker != null)
             cleanupWorker.cancel(false);
-        cleanup();
     }
 
     @Override

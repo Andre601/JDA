@@ -273,9 +273,6 @@ public interface RestAction<T>
      * }
      * }</pre>
      *
-     * @throws java.util.concurrent.RejectedExecutionException
-     *         If the requester has been shutdown by {@link JDA#shutdown()} or {@link JDA#shutdownNow()}
-     *
      * @see net.dv8tion.jda.api.entities.MessageChannel#sendMessage(java.lang.CharSequence) MessageChannel.sendMessage(CharSequence)
      * @see net.dv8tion.jda.api.requests.restaction.MessageAction MessageAction
      * @see #queue(java.util.function.Consumer) queue(Consumer)
@@ -305,9 +302,6 @@ public interface RestAction<T>
      *     action.queue((channel) -> channel.sendMessage(content).queue());
      * }
      * }</pre>
-     *
-     * @throws java.util.concurrent.RejectedExecutionException
-     *         If the requester has been shutdown by {@link JDA#shutdown()} or {@link JDA#shutdownNow()}
      *
      * @param  success
      *         The success callback that will be called at a convenient time
@@ -344,9 +338,6 @@ public interface RestAction<T>
      * }
      * }</pre>
      *
-     * @throws java.util.concurrent.RejectedExecutionException
-     *         If the requester has been shutdown by {@link JDA#shutdown()} or {@link JDA#shutdownNow()}
-     *
      * @param  success
      *         The success callback that will be called at a convenient time
      *         for the API. (can be null to use default)
@@ -366,8 +357,6 @@ public interface RestAction<T>
      *
      * <p><b>This might throw {@link java.lang.RuntimeException RuntimeExceptions}</b>
      *
-     * @throws java.util.concurrent.RejectedExecutionException
-     *         If the requester has been shutdown by {@link JDA#shutdown()} or {@link JDA#shutdownNow()}
      * @throws IllegalStateException
      *         If used within a {@link #queue(Consumer, Consumer) queue(...)} callback
      *
@@ -396,8 +385,6 @@ public interface RestAction<T>
      * @param  shouldQueue
      *         Whether this should automatically handle rate limitations (default true)
      *
-     * @throws java.util.concurrent.RejectedExecutionException
-     *         If the requester has been shutdown by {@link JDA#shutdown()} or {@link JDA#shutdownNow()}
      * @throws IllegalStateException
      *         If used within a {@link #queue(Consumer, Consumer) queue(...)} callback
      * @throws RateLimitedException
@@ -430,9 +417,6 @@ public interface RestAction<T>
      * }
      * }</pre>
      *
-     * @throws java.util.concurrent.RejectedExecutionException
-     *         If the requester has been shutdown by {@link JDA#shutdown()} or {@link JDA#shutdownNow()}
-     *
      * @return Never-null {@link java.util.concurrent.CompletableFuture CompletableFuture} representing the completion promise
      */
     @Nonnull
@@ -445,9 +429,6 @@ public interface RestAction<T>
      * Submits a Request for execution and provides a {@link java.util.concurrent.CompletableFuture CompletableFuture}
      * representing its completion task.
      * <br>Cancelling the returned Future will result in the cancellation of the Request!
-     *
-     * @throws java.util.concurrent.RejectedExecutionException
-     *         If the requester has been shutdown by {@link JDA#shutdown()} or {@link JDA#shutdownNow()}
      *
      * @param  shouldQueue
      *         Whether the Request should automatically handle rate limitations. (default true)

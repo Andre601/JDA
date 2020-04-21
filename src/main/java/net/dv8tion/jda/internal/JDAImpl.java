@@ -665,7 +665,6 @@ public class JDAImpl implements JDA
     {
         shutdown();
         threadConfig.shutdownNow();
-        requester.shutdown(); // stop all requests
     }
 
     @Override
@@ -691,7 +690,7 @@ public class JDAImpl implements JDA
         closeAudioConnections();
         guildSetupController.close();
 
-        requester.stop(); // stop accepting new requests
+        getRequester().shutdown();
         if (audioLifeCyclePool != null)
             audioLifeCyclePool.shutdownNow();
         threadConfig.shutdown();
