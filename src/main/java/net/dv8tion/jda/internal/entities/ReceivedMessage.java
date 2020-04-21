@@ -163,7 +163,7 @@ public class ReceivedMessage extends AbstractMessage
     @Override
     public RestAction<Void> clearReactions()
     {
-        if (!isFromGuild())
+        if (!isFromType(ChannelType.TEXT))
             throw new IllegalStateException("Cannot clear reactions from a message in a Group or PrivateChannel.");
         return getTextChannel().clearReactionsById(getId());
     }
@@ -172,8 +172,6 @@ public class ReceivedMessage extends AbstractMessage
     @Override
     public RestAction<Void> clearReactions(@Nonnull String unicode)
     {
-        if (!isFromGuild())
-            throw new IllegalStateException("Cannot clear reactions from a message in a Group or PrivateChannel.");
         return getTextChannel().clearReactionsById(getId(), unicode);
     }
 
@@ -181,8 +179,6 @@ public class ReceivedMessage extends AbstractMessage
     @Override
     public RestAction<Void> clearReactions(@Nonnull Emote emote)
     {
-        if (!isFromGuild())
-            throw new IllegalStateException("Cannot clear reactions from a message in a Group or PrivateChannel.");
         return getTextChannel().clearReactionsById(getId(), emote);
     }
 
@@ -197,14 +193,6 @@ public class ReceivedMessage extends AbstractMessage
     @Override
     public RestAction<Void> removeReaction(@Nonnull Emote emote, @Nonnull User user)
     {
-        Checks.notNull(user, "User");  // to prevent NPEs
-        // check if the passed user is the SelfUser, then the ChannelType doesn't matter and
-        // we can safely remove that
-        if (user.equals(getJDA().getSelfUser()))
-            return channel.removeReactionById(getIdLong(), emote);
-
-        if (!isFromGuild())
-            throw new IllegalStateException("Cannot remove reactions of others from a message in a Group or PrivateChannel.");
         return getTextChannel().removeReactionById(getIdLong(), emote, user);
     }
 
@@ -219,12 +207,6 @@ public class ReceivedMessage extends AbstractMessage
     @Override
     public RestAction<Void> removeReaction(@Nonnull String unicode, @Nonnull User user)
     {
-        Checks.notNull(user, "User");
-        if (user.equals(getJDA().getSelfUser()))
-            return channel.removeReactionById(getIdLong(), unicode);
-
-        if (!isFromGuild())
-            throw new IllegalStateException("Cannot remove reactions of others from a message in a Group or PrivateChannel.");
         return getTextChannel().removeReactionById(getId(), unicode, user);
     }
 
@@ -408,7 +390,7 @@ public class ReceivedMessage extends AbstractMessage
     @Override
     public List<Member> getMentionedMembers()
     {
-        if (isFromGuild())
+        if (isFromType(ChannelType.TEXT))
             return getMentionedMembers(getGuild());
         else
             throw new IllegalStateException("You must specify a Guild for Messages which are not sent from a TextChannel!");
@@ -542,7 +524,7 @@ public class ReceivedMessage extends AbstractMessage
             final Member member = (Member) mentionable;
             return CollectionUtils.containsAny(getMentionedRoles(), member.getRoles());
         }
-        else if (isFromGuild() && mentionable instanceof User)
+        else if (isFromType(ChannelType.TEXT) && mentionable instanceof User)
         {
             final Member member = getGuild().getMember((User) mentionable);
             return member != null && CollectionUtils.containsAny(getMentionedRoles(), member.getRoles());
@@ -614,7 +596,7 @@ public class ReceivedMessage extends AbstractMessage
             for (User user : getMentionedUsers())
             {
                 String name;
-                if (isFromGuild() && getGuild().isMember(user))
+                if (isFromType(ChannelType.TEXT) && getGuild().isMember(user))
                     name = getGuild().getMember(user).getEffectiveName();
                 else
                     name = user.getName();
@@ -700,8 +682,6 @@ public class ReceivedMessage extends AbstractMessage
     @Override
     public TextChannel getTextChannel()
     {
-        // might be the reason why other methods calling this throw that exception
-        // in case of other GuildChannels being able to receive messages in the future
         if (!isFromType(ChannelType.TEXT))
             throw new IllegalStateException("This message was not sent in a text channel");
         return (TextChannel) channel;
@@ -710,7 +690,7 @@ public class ReceivedMessage extends AbstractMessage
     @Override
     public Category getCategory()
     {
-        return isFromGuild() ? getTextChannel().getParent() : null;
+        return isFromType(ChannelType.TEXT) ? getTextChannel().getParent() : null;
     }
 
     @Nonnull
