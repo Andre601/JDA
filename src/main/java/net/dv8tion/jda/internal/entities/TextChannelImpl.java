@@ -314,9 +314,9 @@ public class TextChannelImpl extends AbstractChannelImpl<TextChannel, TextChanne
             for (PermissionOverride o : overrides.valueCollection())
             {
                 if (o.isMemberOverride())
-                    action.addMemberPermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
+                    action.addPermissionOverride(o.getMember(), o.getAllowedRaw(), o.getDeniedRaw());
                 else
-                    action.addRolePermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
+                    action.addPermissionOverride(o.getRole(), o.getAllowedRaw(), o.getDeniedRaw());
             }
         }
         return action;
