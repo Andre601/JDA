@@ -2034,19 +2034,17 @@ public interface Guild extends ISnowflake
     boolean checkVerification();
 
     /**
-     * Whether or not this Guild is available. A Guild can be unavailable, if the Discord server has problems.
-     * <br>If a Guild is unavailable, it will be removed from the guild cache. You cannot receive events for unavailable guilds.
+     * Returns whether or not this Guild is available. A Guild can be unavailable, if the Discord server has problems.
+     * <br>If a Guild is unavailable, no actions on it can be performed (Messages, Manager,...)
      *
      * @return If the Guild is available
      *
-     * @deprecated This will be removed in a future version,
-     *             unavailable guilds are now removed from cache.
-     *             Replace with {@link JDA#isUnavailable(long)}
+     * @deprecated
+     *         This will be removed in a future version, unavailable guilds are now removed from cache
      */
     @ForRemoval
     @Deprecated
     @DeprecatedSince("4.1.0")
-    @ReplaceWith("getJDA().isUnavailable(guild.getIdLong())")
     boolean isAvailable();
 
     /**
