@@ -23,7 +23,6 @@ import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -35,7 +34,6 @@ public class DeferredRestAction<T, R extends RestAction<T>> implements Auditable
     private final Supplier<T> valueSupplier;
     private final Supplier<R> actionSupplier;
 
-    private long deadline = -1;
     private BooleanSupplier isAction;
     private BooleanSupplier transitiveChecks;
 
@@ -76,21 +74,6 @@ public class DeferredRestAction<T, R extends RestAction<T>> implements Auditable
         return this;
     }
 
-    @Nonnull
-    @Override
-    public AuditableRestAction<T> timeout(long timeout, @Nonnull TimeUnit unit)
-    {
-        return this;
-    }
-
-    @Nonnull
-    @Override
-    public AuditableRestAction<T> deadline(long timestamp)
-    {
-        this.deadline = timestamp;
-        return this;
-    }
-
     public AuditableRestAction<T> setCacheCheck(BooleanSupplier checks)
     {
         this.isAction = checks;
@@ -110,7 +93,7 @@ public class DeferredRestAction<T, R extends RestAction<T>> implements Auditable
         {
             BooleanSupplier checks = this.isAction;
             if (checks != null && checks.getAsBoolean())
-                getAction().queue(success, failure);
+                actionSupplier.get().queue(success, failure);
             else
                 finalSuccess.accept(null);
             return;
@@ -135,7 +118,7 @@ public class DeferredRestAction<T, R extends RestAction<T>> implements Auditable
         {
             BooleanSupplier checks = this.isAction;
             if (checks != null && checks.getAsBoolean())
-                return getAction().submit(shouldQueue);
+                return actionSupplier.get().submit(shouldQueue);
             return CompletableFuture.completedFuture(null);
         }
         T value = valueSupplier.get();
@@ -151,7 +134,7 @@ public class DeferredRestAction<T, R extends RestAction<T>> implements Auditable
         {
             BooleanSupplier checks = this.isAction;
             if (checks != null && checks.getAsBoolean())
-                return getAction().complete(shouldQueue);
+                return actionSupplier.get().complete(shouldQueue);
             return null;
         }
         T value = valueSupplier.get();
@@ -160,12 +143,9 @@ public class DeferredRestAction<T, R extends RestAction<T>> implements Auditable
         return getAction().complete(shouldQueue);
     }
 
+    @SuppressWarnings("unchecked")
     private R getAction()
     {
-        R action = actionSupplier.get();
-        action.setCheck(transitiveChecks);
-        if (deadline >= 0)
-            action.deadline(deadline);
-        return action;
+        return (R) actionSupplier.get().setCheck(transitiveChecks);
     }
 }

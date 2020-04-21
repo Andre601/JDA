@@ -24,9 +24,8 @@ import net.dv8tion.jda.internal.utils.Checks;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.awt.*;
+import java.awt.Color;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -46,14 +45,6 @@ public interface RoleAction extends AuditableRestAction<Role>
     @Nonnull
     @Override
     RoleAction setCheck(@Nullable BooleanSupplier checks);
-
-    @Nonnull
-    @Override
-    RoleAction timeout(long timeout, @Nonnull TimeUnit unit);
-
-    @Nonnull
-    @Override
-    RoleAction deadline(long timestamp);
 
     /**
      * The guild to create the role in

@@ -39,11 +39,6 @@ public class FlatMapRestAction<I, O> extends RestActionOperator<I, O>
         this.condition = condition;
     }
 
-    private RestAction<O> supply(I input)
-    {
-        return applyContext(function.apply(input));
-    }
-
     @Override
     public void queue(@Nullable Consumer<? super O> success, @Nullable Consumer<? super Throwable> failure)
     {
@@ -51,7 +46,7 @@ public class FlatMapRestAction<I, O> extends RestActionOperator<I, O>
         action.queue((result) -> {
             if (condition != null && !condition.test(result))
                 return;
-            RestAction<O> then = supply(result);
+            RestAction<O> then = function.apply(result);
             if (then == null)
                 doFailure(onFailure, new IllegalStateException("FlatMap operand is null"));
             else
@@ -62,7 +57,7 @@ public class FlatMapRestAction<I, O> extends RestActionOperator<I, O>
     @Override
     public O complete(boolean shouldQueue) throws RateLimitedException
     {
-        return supply(action.complete(shouldQueue)).complete(shouldQueue);
+        return function.apply(action.complete(shouldQueue)).complete(shouldQueue);
     }
 
     @Nonnull
@@ -70,6 +65,6 @@ public class FlatMapRestAction<I, O> extends RestActionOperator<I, O>
     public CompletableFuture<O> submit(boolean shouldQueue)
     {
         return action.submit(shouldQueue)
-                .thenCompose((result) -> supply(result).submit(shouldQueue));
+                .thenCompose((result) -> function.apply(result).submit(shouldQueue));
     }
 }

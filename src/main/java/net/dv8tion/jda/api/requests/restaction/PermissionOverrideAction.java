@@ -25,7 +25,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -46,14 +45,6 @@ public interface PermissionOverrideAction extends AuditableRestAction<Permission
     @Nonnull
     @Override
     PermissionOverrideAction setCheck(@Nullable BooleanSupplier checks);
-
-    @Nonnull
-    @Override
-    PermissionOverrideAction timeout(long timeout, @Nonnull TimeUnit unit);
-
-    @Nonnull
-    @Override
-    PermissionOverrideAction deadline(long timestamp);
 
     /**
      * Shortcut for {@code resetAllow().resetDeny()}.

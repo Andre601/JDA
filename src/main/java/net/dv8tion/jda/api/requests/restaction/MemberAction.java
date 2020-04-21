@@ -25,7 +25,6 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -45,14 +44,6 @@ public interface MemberAction extends RestAction<Void>
     @Nonnull
     @Override
     MemberAction setCheck(@Nullable BooleanSupplier checks);
-
-    @Nonnull
-    @Override
-    MemberAction timeout(long timeout, @Nonnull TimeUnit unit);
-
-    @Nonnull
-    @Override
-    MemberAction deadline(long timestamp);
 
     /**
      * The access token

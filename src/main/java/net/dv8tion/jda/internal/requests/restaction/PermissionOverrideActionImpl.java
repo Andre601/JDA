@@ -31,7 +31,6 @@ import okhttp3.RequestBody;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 public class PermissionOverrideActionImpl
@@ -81,20 +80,6 @@ public class PermissionOverrideActionImpl
     public PermissionOverrideActionImpl setCheck(BooleanSupplier checks)
     {
         return (PermissionOverrideActionImpl) super.setCheck(checks);
-    }
-
-    @Nonnull
-    @Override
-    public PermissionOverrideActionImpl timeout(long timeout, @Nonnull TimeUnit unit)
-    {
-        return (PermissionOverrideActionImpl) super.timeout(timeout, unit);
-    }
-
-    @Nonnull
-    @Override
-    public PermissionOverrideActionImpl deadline(long timestamp)
-    {
-        return (PermissionOverrideActionImpl) super.deadline(timestamp);
     }
 
     @Nonnull

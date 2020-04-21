@@ -21,8 +21,8 @@ import net.dv8tion.jda.internal.utils.JDALogger;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
+import java.util.concurrent.CancellationException;
 
-@SuppressWarnings("rawtypes")
 public abstract class RateLimiter
 {
     //Implementations of this class exist in the net.dv8tion.jda.api.requests.ratelimit package.
@@ -37,17 +37,25 @@ public abstract class RateLimiter
 
     protected boolean isSkipped(Iterator<Request> it, Request request)
     {
-        if (request.isSkipped())
+        try
         {
-            cancel(it, request);
+            if (request.isCanceled() || !request.runChecks())
+            {
+                cancel(it, request, new CancellationException("RestAction has been cancelled"));
+                return true;
+            }
+        }
+        catch (Throwable exception)
+        {
+            cancel(it, request, exception);
             return true;
         }
         return false;
     }
 
-    private void cancel(Iterator<Request> it, Request request)
+    private void cancel(Iterator<Request> it, Request request, Throwable exception)
     {
-        request.onCancelled();
+        request.onFailure(exception);
         it.remove();
     }
 
