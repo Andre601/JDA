@@ -24,7 +24,6 @@ import net.dv8tion.jda.api.requests.Request;
 import net.dv8tion.jda.api.requests.Response;
 import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
 import net.dv8tion.jda.api.utils.data.DataObject;
-import net.dv8tion.jda.internal.entities.AbstractChannelImpl;
 import net.dv8tion.jda.internal.entities.PermissionOverrideImpl;
 import net.dv8tion.jda.internal.requests.Route;
 import net.dv8tion.jda.internal.utils.Checks;
@@ -45,27 +44,19 @@ public class PermissionOverrideActionImpl
 
     private long allow = 0;
     private long deny = 0;
-    private final AbstractChannelImpl<?, ?> channel;
+    private final GuildChannel channel;
     private final IPermissionHolder permissionHolder;
-    private final boolean isRole;
-    private final long id;
 
     public PermissionOverrideActionImpl(PermissionOverride override)
     {
-        super(override.getJDA(), Route.Channels.MODIFY_PERM_OVERRIDE.compile(override.getChannel().getId(), override.getId()));
-        this.channel = (AbstractChannelImpl<?, ?>) override.getChannel();
-        this.permissionHolder = override.getPermissionHolder();
-        this.isRole = override.isRoleOverride();
-        this.id = override.getIdLong();
+        this(override.getJDA(), override.getChannel(), override.isRoleOverride() ? override.getRole() : override.getMember());
     }
 
     public PermissionOverrideActionImpl(JDA api, GuildChannel channel, IPermissionHolder permissionHolder)
     {
         super(api, Route.Channels.CREATE_PERM_OVERRIDE.compile(channel.getId(), permissionHolder.getId()));
-        this.channel = (AbstractChannelImpl<?, ?>) channel;
+        this.channel = channel;
         this.permissionHolder = permissionHolder;
-        this.isRole = permissionHolder instanceof Role;
-        this.id = permissionHolder.getIdLong();
     }
 
     // Whether to keep original value of the current override or not - by default we override the value
@@ -164,13 +155,13 @@ public class PermissionOverrideActionImpl
     @Override
     public boolean isMember()
     {
-        return !isRole;
+        return permissionHolder instanceof Member;
     }
 
     @Override
     public boolean isRole()
     {
-        return isRole;
+        return permissionHolder instanceof Role;
     }
 
     @Nonnull
@@ -211,7 +202,7 @@ public class PermissionOverrideActionImpl
     {
         if (isOverride)
             return 0;
-        PermissionOverride override = channel.getOverrideMap().get(id);
+        PermissionOverride override = channel.getPermissionOverride(permissionHolder);
         return override == null ? 0 : override.getAllowedRaw();
     }
 
@@ -219,7 +210,7 @@ public class PermissionOverrideActionImpl
     {
         if (isOverride)
             return 0;
-        PermissionOverride override = channel.getOverrideMap().get(id);
+        PermissionOverride override = channel.getPermissionOverride(permissionHolder);
         return override == null ? 0 : override.getDeniedRaw();
     }
 
