@@ -23,7 +23,7 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR})
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
 public @interface DeprecatedSince
 {
     String value();

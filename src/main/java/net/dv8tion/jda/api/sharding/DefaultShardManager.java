@@ -16,11 +16,11 @@
 package net.dv8tion.jda.api.sharding;
 
 import gnu.trove.set.TIntSet;
+import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.SessionController;
@@ -44,7 +44,6 @@ import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -187,13 +186,6 @@ public class DefaultShardManager implements ShardManager
                 }
             }
         }
-    }
-
-    @Nonnull
-    @Override
-    public EnumSet<GatewayIntent> getGatewayIntents()
-    {
-        return GatewayIntent.getIntents(shardingConfig.getIntents());
     }
 
     @Override
@@ -488,7 +480,7 @@ public class DefaultShardManager implements ShardManager
         ExecutorService callbackPool = callbackPair.executor;
         boolean shutdownCallbackPool = callbackPair.automaticShutdown;
 
-        AuthorizationConfig authConfig = new AuthorizationConfig(token);
+        AuthorizationConfig authConfig = new AuthorizationConfig(AccountType.BOT, token);
         SessionConfig sessionConfig = this.sessionConfig.toSessionConfig(httpClient);
         ThreadingConfig threadingConfig = new ThreadingConfig();
         threadingConfig.setRateLimitPool(rateLimitPool, shutdownRateLimitPool);
@@ -496,13 +488,8 @@ public class DefaultShardManager implements ShardManager
         threadingConfig.setCallbackPool(callbackPool, shutdownCallbackPool);
         MetaConfig metaConfig = new MetaConfig(this.metaConfig.getMaxBufferSize(), this.metaConfig.getContextMap(shardId), this.metaConfig.getCacheFlags(), this.sessionConfig.getFlags());
         final JDAImpl jda = new JDAImpl(authConfig, sessionConfig, threadingConfig, metaConfig);
-        jda.setMemberCachePolicy(shardingConfig.getMemberCachePolicy());
+        jda.setChunkingFilter(chunkingFilter);
         threadingConfig.init(jda::getIdentifierString);
-        // We can only do member chunking with the GUILD_MEMBERS intent
-        if ((shardingConfig.getIntents() & GatewayIntent.GUILD_MEMBERS.getRawValue()) == 0)
-            jda.setChunkingFilter(ChunkingFilter.NONE);
-        else
-            jda.setChunkingFilter(chunkingFilter);
 
         jda.setShardManager(this);
 
@@ -563,7 +550,7 @@ public class DefaultShardManager implements ShardManager
 
         final JDA.ShardInfo shardInfo = new JDA.ShardInfo(shardId, getShardsTotal());
 
-        final int shardTotal = jda.login(this.gatewayURL, shardInfo, this.metaConfig.getCompression(), false, shardingConfig.getIntents());
+        final int shardTotal = jda.login(this.gatewayURL, shardInfo, this.metaConfig.getCompression(), false);
         if (getShardsTotal() == -1)
             shardingConfig.setShardsTotal(shardTotal);
 

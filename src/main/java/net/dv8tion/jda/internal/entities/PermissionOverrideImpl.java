@@ -30,6 +30,7 @@ import net.dv8tion.jda.internal.requests.restaction.PermissionOverrideActionImpl
 import net.dv8tion.jda.internal.utils.cache.SnowflakeReference;
 
 import javax.annotation.Nonnull;
+
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
@@ -39,7 +40,7 @@ public class PermissionOverrideImpl implements PermissionOverride
     private final long id;
     private final SnowflakeReference<GuildChannel> channel;
     private final ChannelType channelType;
-    private final boolean isRole;
+    private final boolean role;
     private final JDAImpl api;
 
     protected final ReentrantLock mngLock = new ReentrantLock();
@@ -48,13 +49,13 @@ public class PermissionOverrideImpl implements PermissionOverride
     private long allow;
     private long deny;
 
-    public PermissionOverrideImpl(GuildChannel channel, long id, boolean isRole)
+    public PermissionOverrideImpl(GuildChannel channel, IPermissionHolder permissionHolder)
     {
-        this.isRole = isRole;
+        this.role = permissionHolder instanceof Role;
         this.channelType = channel.getType();
         this.api = (JDAImpl) channel.getJDA();
         this.channel = new SnowflakeReference<>(channel, (channelId) -> api.getGuildChannelById(channelType, channelId));
-        this.id = id;
+        this.id = permissionHolder.getIdLong();
     }
 
     @Override
@@ -106,7 +107,7 @@ public class PermissionOverrideImpl implements PermissionOverride
     @Override
     public IPermissionHolder getPermissionHolder()
     {
-        return isRole ? getRole() : getMember();
+        return (IPermissionHolder) (role ? getRole() : getMember());  // permissionHolder is no longer a field
     }
 
     @Override
@@ -138,13 +139,13 @@ public class PermissionOverrideImpl implements PermissionOverride
     @Override
     public boolean isMemberOverride()
     {
-        return !isRole;
+        return !role;
     }
 
     @Override
     public boolean isRoleOverride()
     {
-        return isRole;
+        return role;
     }
 
     @Nonnull

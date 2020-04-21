@@ -49,7 +49,7 @@ public class GuildBanHandler extends SocketHandler
             return null;
         }
 
-        User user = getJDA().getEntityBuilder().createFakeUser(userJson);
+        User user = getJDA().getEntityBuilder().createFakeUser(userJson, false);
 
         if (banned)
         {

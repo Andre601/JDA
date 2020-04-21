@@ -21,7 +21,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDA.Status;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.cache.CacheView;
@@ -29,6 +28,7 @@ import net.dv8tion.jda.api.utils.cache.ShardCacheView;
 import net.dv8tion.jda.api.utils.cache.SnowflakeCacheView;
 import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.requests.CompletedRestAction;
+import net.dv8tion.jda.internal.requests.DeferredRestAction;
 import net.dv8tion.jda.internal.requests.RestActionImpl;
 import net.dv8tion.jda.internal.requests.Route;
 import net.dv8tion.jda.internal.utils.Checks;
@@ -172,21 +172,6 @@ public interface ShardManager
     default int getShardsTotal()
     {
         return this.getShardsQueued() + this.getShardsRunning();
-    }
-
-    /**
-     * The {@link GatewayIntent GatewayIntents} for the JDA sessions of this shard manager.
-     *
-     * @return {@link EnumSet} of active gateway intents
-     */
-    @Nonnull
-    default EnumSet<GatewayIntent> getGatewayIntents()
-    {
-        //noinspection ConstantConditions
-        return getShardCache().applyStream((stream) ->
-                stream.map(JDA::getGatewayIntents)
-                      .findAny()
-                      .orElse(EnumSet.noneOf(GatewayIntent.class)));
     }
 
     /**
@@ -570,10 +555,8 @@ public interface ShardManager
         for (JDA shard : getShardCache())
         {
             api = shard;
-            EnumSet<GatewayIntent> intents = shard.getGatewayIntents();
             User user = shard.getUserById(id);
-            boolean isUpdated = intents.contains(GatewayIntent.GUILD_PRESENCES) || intents.contains(GatewayIntent.GUILD_MEMBERS);
-            if (user != null && isUpdated)
+            if (user != null)
                 return new CompletedRestAction<>(shard, user);
         }
 
@@ -582,7 +565,7 @@ public interface ShardManager
 
         JDAImpl jda = (JDAImpl) api;
         Route.CompiledRoute route = Route.Users.GET_USER.compile(Long.toUnsignedString(id));
-        return new RestActionImpl<>(jda, route, (response, request) -> jda.getEntityBuilder().createFakeUser(response.getObject()));
+        return new RestActionImpl<>(jda, route, (response, request) -> jda.getEntityBuilder().createFakeUser(response.getObject(), false));
     }
 
     /**
@@ -590,8 +573,6 @@ public interface ShardManager
      * <br>Format has to be in the form {@code Username#Discriminator} where the
      * username must be between 2 and 32 characters (inclusive) matching the exact casing and the discriminator
      * must be exactly 4 digits.
-     *
-     * <p>This will only check cached users!
      *
      * <p>This only checks users that are known to the currently logged in account (shards). If a user exists
      * with the tag that is not available in the {@link #getUserCache() User-Cache} it will not be detected.
@@ -621,8 +602,6 @@ public interface ShardManager
      * <br>Format has to be in the form {@code Username#Discriminator} where the
      * username must be between 2 and 32 characters (inclusive) matching the exact casing and the discriminator
      * must be exactly 4 digits.
-     *
-     * <p>This will only check cached users!
      *
      * <p>This only checks users that are known to the currently logged in account (shards). If a user exists
      * with the tag that is not available in the {@link #getUserCache() User-Cache} it will not be detected.

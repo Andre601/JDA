@@ -17,10 +17,8 @@
 package net.dv8tion.jda.internal;
 
 import com.neovisionaries.ws.client.WebSocketFactory;
-import gnu.trove.TCollections;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.set.TLongSet;
-import gnu.trove.set.hash.TLongHashSet;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
@@ -38,18 +36,19 @@ import net.dv8tion.jda.api.hooks.InterfacedEventManager;
 import net.dv8tion.jda.api.hooks.VoiceDispatchInterceptor;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.managers.Presence;
-import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.Request;
 import net.dv8tion.jda.api.requests.Response;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.sharding.ShardManager;
-import net.dv8tion.jda.api.utils.*;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.Compression;
+import net.dv8tion.jda.api.utils.MiscUtil;
+import net.dv8tion.jda.api.utils.SessionController;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.cache.CacheView;
 import net.dv8tion.jda.api.utils.cache.SnowflakeCacheView;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.EntityBuilder;
-import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.handle.EventCache;
 import net.dv8tion.jda.internal.handle.GuildSetupController;
 import net.dv8tion.jda.internal.hooks.EventManagerProxy;
@@ -105,7 +104,6 @@ public class JDAImpl implements JDA
 
     protected final GuildSetupController guildSetupController;
     protected final DirectAudioControllerImpl audioController;
-    protected final TLongSet chunkingRequested = TCollections.synchronizedSet(new TLongHashSet());
 
     protected final AuthorizationConfig authConfig;
     protected final ThreadingConfig threadConfig;
@@ -125,7 +123,6 @@ public class JDAImpl implements JDA
 
     protected String clientId = null;
     protected ShardManager shardManager = null;
-    protected MemberCachePolicy memberCachePolicy = MemberCachePolicy.ALL;
 
     public JDAImpl(AuthorizationConfig authConfig)
     {
@@ -146,17 +143,7 @@ public class JDAImpl implements JDA
         this.requester.setRetryOnTimeout(this.sessionConfig.isRetryOnTimeout());
         this.guildSetupController = new GuildSetupController(this);
         this.audioController = new DirectAudioControllerImpl(this);
-        this.eventCache = new EventCache();
-    }
-
-    public void onChunksRequested(GuildImpl guild)
-    {
-        this.chunkingRequested.add(guild.getIdLong());
-    }
-
-    public void onChunksFinished(GuildImpl guild)
-    {
-        this.chunkingRequested.remove(guild.getIdLong());
+        this.eventCache = new EventCache(isGuildSubscriptions());
     }
 
     public void handleEvent(@Nonnull GenericEvent event)
@@ -179,15 +166,9 @@ public class JDAImpl implements JDA
         return metaConfig.getCacheFlags().contains(flag);
     }
 
-    public boolean isIntent(GatewayIntent intent)
+    public boolean isGuildSubscriptions()
     {
-        int raw = intent.getRawValue();
-        return (client.getGatewayIntents() & raw) == raw;
-    }
-
-    public boolean useIntents()
-    {
-        return client.getGatewayIntents() != -1;
+        return metaConfig.isGuildSubscriptions();
     }
 
     public int getLargeThreshold()
@@ -202,11 +183,9 @@ public class JDAImpl implements JDA
 
     public boolean chunkGuild(long id)
     {
-        if (chunkingRequested.contains(id))
-            return true;
         try
         {
-            return isIntent(GatewayIntent.GUILD_MEMBERS) && chunkingFilter.filter(id);
+            return isGuildSubscriptions() && chunkingFilter.filter(id);
         }
         catch (Exception e)
         {
@@ -218,26 +197,6 @@ public class JDAImpl implements JDA
     public void setChunkingFilter(ChunkingFilter filter)
     {
         this.chunkingFilter = filter;
-    }
-
-    public boolean cacheMember(Member member)
-    {
-        try
-        {
-            return member.getUser().equals(getSelfUser()) // always cache self
-                    || chunkGuild(member.getGuild().getIdLong())  // always cache if chunking
-                    || memberCachePolicy.cacheMember(member); // ask policy, should we cache?
-        }
-        catch (Exception e)
-        {
-            LOG.error("Uncaught exception from member cache policy", e);
-            return true;
-        }
-    }
-
-    public void setMemberCachePolicy(MemberCachePolicy policy)
-    {
-        this.memberCachePolicy = policy;
     }
 
     public SessionController getSessionController()
@@ -257,15 +216,15 @@ public class JDAImpl implements JDA
 
     public int login() throws LoginException
     {
-        return login(null, null, Compression.ZLIB, true, GatewayIntent.ALL_INTENTS);
+        return login(null, null, Compression.ZLIB, true);
     }
 
-    public int login(ShardInfo shardInfo, Compression compression, boolean validateToken, int intents) throws LoginException
+    public int login(ShardInfo shardInfo, Compression compression, boolean validateToken) throws LoginException
     {
-        return login(null, shardInfo, compression, validateToken, intents);
+        return login(null, shardInfo, compression, validateToken);
     }
 
-    public int login(String gatewayUrl, ShardInfo shardInfo, Compression compression, boolean validateToken, int intents) throws LoginException
+    public int login(String gatewayUrl, ShardInfo shardInfo, Compression compression, boolean validateToken) throws LoginException
     {
         this.shardInfo = shardInfo;
         threadConfig.init(this::getIdentifierString);
@@ -299,7 +258,7 @@ public class JDAImpl implements JDA
             LOG.info("Login Successful!");
         }
 
-        client = new WebSocketClient(this, compression, intents);
+        client = new WebSocketClient(this, compression);
         // remove our MDC metadata when we exit our code
         if (previousContext != null)
             previousContext.forEach(MDC::put);
@@ -352,6 +311,13 @@ public class JDAImpl implements JDA
 
     public void verifyToken() throws LoginException
     {
+        this.verifyToken(false);
+    }
+
+    // @param alreadyFailed If has already been a failed attempt with the current configuration
+    public void verifyToken(boolean alreadyFailed) throws LoginException
+    {
+
         RestActionImpl<DataObject> login = new RestActionImpl<DataObject>(this, Route.Self.GET_SELF.compile())
         {
             @Override
@@ -365,24 +331,76 @@ public class JDAImpl implements JDA
                     request.onSuccess(null);
                 else
                     request.onFailure(new LoginException("When verifying the authenticity of the provided token, Discord returned an unknown response:\n" +
-                            response.toString()));
+                        response.toString()));
             }
         };
 
-        try
+        DataObject userResponse;
+
+        if (!alreadyFailed)
         {
-            DataObject userResponse = login.complete();
+            userResponse = checkToken(login);
             if (userResponse != null)
             {
+                verifyAccountType(userResponse);
                 getEntityBuilder().createSelfUser(userResponse);
                 return;
             }
-            shutdownNow();
-            throw new LoginException("The provided token is invalid!");
         }
-        catch (RuntimeException | Error e)
+
+        //If we received a null return for userResponse, then that means we hit a 401.
+        // 401 occurs when we attempt to access the users/@me endpoint with the wrong token prefix.
+        // e.g: If we use a Client token and prefix it with "Bot ", or use a bot token and don't prefix it.
+        // It also occurs when we attempt to access the endpoint with an invalid token.
+        //The code below already knows that something is wrong with the token. We want to determine if it is invalid
+        // or if the developer attempted to login with a token using the wrong AccountType.
+
+        //If we attempted to login as a Bot, remove the "Bot " prefix and set the Requester to be a client.
+        String token;
+        if (getAccountType() == AccountType.BOT)
         {
-            shutdownNow();
+            token = getToken().substring("Bot ".length());
+            requester = new Requester(this, new AuthorizationConfig(AccountType.CLIENT, token));
+        }
+        else    //If we attempted to login as a Client, prepend the "Bot " prefix and set the Requester to be a Bot
+        {
+            requester = new Requester(this, new AuthorizationConfig(AccountType.BOT, getToken()));
+        }
+
+        userResponse = checkToken(login);
+        shutdownNow();
+
+        //If the response isn't null (thus it didn't 401) send it to the secondary verify method to determine
+        // which account type the developer wrongly attempted to login as
+        if (userResponse != null)
+            verifyAccountType(userResponse);
+        else    //We 401'd again. This is an invalid token
+            throw new LoginException("The provided token is invalid!");
+    }
+
+    private void verifyAccountType(DataObject userResponse)
+    {
+        if (getAccountType() == AccountType.BOT)
+        {
+            if (!userResponse.hasKey("bot") || !userResponse.getBoolean("bot"))
+                throw new AccountTypeException(AccountType.BOT, "Attempted to login as a BOT with a CLIENT token!");
+        }
+        else
+        {
+            if (userResponse.hasKey("bot") && userResponse.getBoolean("bot"))
+                throw new AccountTypeException(AccountType.CLIENT, "Attempted to login as a CLIENT with a BOT token!");
+        }
+    }
+
+    private DataObject checkToken(RestActionImpl<DataObject> login) throws LoginException
+    {
+        DataObject userResponse;
+        try
+        {
+            userResponse = login.complete();
+        }
+        catch (RuntimeException e)
+        {
             //We check if the LoginException is masked inside of a ExecutionException which is masked inside of the RuntimeException
             Throwable ex = e.getCause() instanceof ExecutionException ? e.getCause().getCause() : null;
             if (ex instanceof LoginException)
@@ -390,6 +408,7 @@ public class JDAImpl implements JDA
             else
                 throw e;
         }
+        return userResponse;
     }
 
     public AuthorizationConfig getAuthorizationConfig()
@@ -437,28 +456,6 @@ public class JDAImpl implements JDA
     public Status getStatus()
     {
         return status;
-    }
-
-    @Nonnull
-    @Override
-    public EnumSet<GatewayIntent> getGatewayIntents()
-    {
-        return GatewayIntent.getIntents(client.getGatewayIntents());
-    }
-
-    @Override
-    public boolean unloadUser(long userId)
-    {
-        if (userId == selfUser.getIdLong())
-            return false;
-        User user = getUserById(userId);
-        if (user == null)
-            return false;
-
-        // We avoid to lock both the guild cache and member cache to make a deadlock impossible
-        return getGuildCache().stream()
-                .filter(guild -> guild.unloadMember(userId)) // this also removes it from user cache
-                .count() > 0L; // we use count to make sure it iterates all guilds not just one
     }
 
     @Override
@@ -521,8 +518,6 @@ public class JDAImpl implements JDA
     @Override
     public DirectAudioControllerImpl getDirectAudioController()
     {
-        if (!isIntent(GatewayIntent.GUILD_VOICE_STATES))
-            throw new IllegalStateException("Cannot use audio features with disabled GUILD_VOICE_STATES intent!");
         return this.audioController;
     }
 
@@ -555,19 +550,14 @@ public class JDAImpl implements JDA
 
     @Nonnull
     @Override
-    public RestAction<User> retrieveUserById(long id, boolean update)
+    public RestAction<User> retrieveUserById(long id)
     {
-        if (id == getSelfUser().getIdLong())
-            return new CompletedRestAction<>(this, getSelfUser());
-
         AccountTypeException.check(getAccountType(), AccountType.BOT);
-        return new DeferredRestAction<>(this, User.class,
-                () -> !update || isIntent(GatewayIntent.GUILD_MEMBERS) || isIntent(GatewayIntent.GUILD_PRESENCES) ? getUserById(id) : null,
-                () -> {
-                    Route.CompiledRoute route = Route.Users.GET_USER.compile(Long.toUnsignedString(id));
-                    return new RestActionImpl<>(this, route,
-                            (response, request) -> getEntityBuilder().createFakeUser(response.getObject()));
-                });
+        return new DeferredRestAction<>(this, User.class, () -> getUserById(id), () -> {
+            Route.CompiledRoute route = Route.Users.GET_USER.compile(Long.toUnsignedString(id));
+            return new RestActionImpl<>(this, route,
+                    (response, request) -> getEntityBuilder().createFakeUser(response.getObject(), false));
+        });
     }
 
     @Nonnull
@@ -806,8 +796,16 @@ public class JDAImpl implements JDA
     @Override
     public GuildActionImpl createGuild(@Nonnull String name)
     {
-        if (guildCache.size() >= 10)
-            throw new IllegalStateException("Cannot create a Guild with a Bot in 10 or more guilds!");
+        switch (getAccountType())
+        {
+            case BOT:
+                if (guildCache.size() >= 10)
+                    throw new IllegalStateException("Cannot create a Guild with a Bot in 10 or more guilds!");
+                break;
+            case CLIENT:
+                if (guildCache.size() >= 100)
+                    throw new IllegalStateException("Cannot be in more than 100 guilds with AccountType.CLIENT!");
+        }
         return new GuildActionImpl(this, name);
     }
 

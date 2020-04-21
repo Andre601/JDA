@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.util.EnumSet;
 
 /**
@@ -101,12 +102,11 @@ public interface PermissionOverride extends ISnowflake
 
     /**
      * This method will return the {@link net.dv8tion.jda.api.entities.IPermissionHolder PermissionHolder} of this PermissionOverride.
-     * It can be used to get the general permissions of that PermissionHolder, no matter if it is a {@link net.dv8tion.jda.api.entities.Member Member} or a {@link net.dv8tion.jda.api.entities.Role Role}.
-     * <br>Similar to {@link #getMember()} this will return {@code null} if the member is not cached.
+     * It can be used to e. g. get the general permissions of that PermissionHolder no matter if it is a {@link net.dv8tion.jda.api.entities.Member Member} or a {@link net.dv8tion.jda.api.entities.Role Role}.
      *
-     * <p>To get the concrete Member or Role, use {@link PermissionOverride#getMember()} or {@link PermissionOverride#getRole()}!
+     * <p><b>To get the concrete Member or Role, use {@link PermissionOverride#getMember()} or {@link PermissionOverride#getRole()}!</b>
      *
-     * @return Possibly-null {@link net.dv8tion.jda.api.entities.IPermissionHolder IPermissionHolder} of this PermissionOverride.
+     * @return Possibly-null {@link net.dv8tion.jda.api.entities.IPermissionHolder PermissionHolder} of this PermissionOverride.
      *
      * @see    PermissionOverride#getRole()
      * @see    PermissionOverride#getMember()
@@ -116,9 +116,10 @@ public interface PermissionOverride extends ISnowflake
 
     /**
      * If this PermissionOverride is an override dealing with a {@link net.dv8tion.jda.api.entities.Member Member}, then
-     * this method will return the related {@link net.dv8tion.jda.api.entities.Member Member} if the member is currently cached.
+     * this method will return the related {@link net.dv8tion.jda.api.entities.Member Member}.
      * <br>Otherwise, this method returns {@code null}.
-     * <br>Basically: if {@link PermissionOverride#isMemberOverride()} returns {@code false} or the member is not cached, this returns {@code null}.
+     * <br>Basically: if {@link PermissionOverride#isMemberOverride()}
+     * returns {@code false}, this returns {@code null}.
      *
      * @return Possibly-null related {@link net.dv8tion.jda.api.entities.Member Member}.
      */

@@ -25,6 +25,7 @@ import gnu.trove.map.hash.TLongLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
+import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.events.guild.UnavailableGuildLeaveEvent;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.data.DataArray;
@@ -51,6 +52,7 @@ public class GuildSetupController
     private final TLongObjectMap<GuildSetupNode> setupNodes = new TLongObjectHashMap<>();
     private final TLongSet chunkingGuilds = new TLongHashSet();
     private final TLongLongMap pendingChunks = new TLongLongHashMap();
+    private final TLongSet syncingGuilds;
     private final TLongSet unavailableGuilds = new TLongHashSet();
 
     private int incompleteCount = 0;
@@ -63,11 +65,20 @@ public class GuildSetupController
     public GuildSetupController(JDAImpl api)
     {
         this.api = api;
+        if (isClient())
+            syncingGuilds = new TLongHashSet();
+        else
+            syncingGuilds = null;
     }
 
     JDAImpl getJDA()
     {
         return api;
+    }
+
+    boolean isClient()
+    {
+        return getJDA().getAccountType() == AccountType.CLIENT;
     }
 
     void addGuildForChunking(long id, boolean join)
@@ -87,12 +98,33 @@ public class GuildSetupController
         tryChunking();
     }
 
+    void addGuildForSyncing(long id, boolean join)
+    {
+        if (!isClient())
+            return;
+        log.trace("Adding guild for syncing ID: {}", id);
+        if (join || incompleteCount <= 0)
+        {
+            if (incompleteCount <= 0)
+            {
+                // this happens during runtime -> sync right away
+                sendSyncRequest(DataArray.empty().add(id));
+                return;
+            }
+            syncingCount++;
+        }
+        syncingGuilds.add(id);
+        trySyncing();
+    }
+
     void remove(long id)
     {
         unavailableGuilds.remove(id);
         setupNodes.remove(id);
         chunkingGuilds.remove(id);
         synchronized (pendingChunks) { pendingChunks.remove(id); }
+        if (syncingGuilds != null)
+            syncingGuilds.remove(id);
     }
 
     public void ready(long id)
@@ -126,6 +158,11 @@ public class GuildSetupController
         node.handleReady(obj);
         if (node.markedUnavailable)
         {
+            if (node.sync)
+            {
+                syncingCount--;
+                trySyncing();
+            }
             incompleteCount--;
             tryChunking();
         }
@@ -155,6 +192,8 @@ public class GuildSetupController
         {
             //Looks like this guild decided to become available again during startup
             // that means we can now consider it for ReadyEvent status again!
+            if (node.sync)
+                syncingCount++;
             incompleteCount++;
         }
         node.handleCreate(obj);
@@ -181,6 +220,13 @@ public class GuildSetupController
             if (!node.markedUnavailable)
             {
                 node.markedUnavailable = true; // this prevents repeated decrements from duplicate events
+                if (node.sync && !node.requestedChunk)
+                {
+                    // If this node is chunking then it is already synced
+                    syncingGuilds.remove(id);
+                    syncingCount--;
+                    trySyncing();
+                }
                 if (incompleteCount > 0)
                 {
                     // Allow other guilds to start chunking
@@ -373,17 +419,6 @@ public class GuildSetupController
 
     private void tryChunking()
     {
-        if (api.useIntents())
-        {
-            // can only send a single guild id for this
-            chunkingGuilds.forEach((id) -> {
-                sendChunkRequest(id);
-                return true;
-            });
-            chunkingGuilds.clear();
-            return;
-        }
-
         if (chunkingGuilds.size() >= 50)
         {
             // request chunks
@@ -423,6 +458,33 @@ public class GuildSetupController
             DataObject.empty()
                 .put("op", WebSocketCode.GUILD_SYNC)
                 .put("d", arr));
+    }
+
+    private void trySyncing()
+    {
+        if (syncingGuilds.size() >= 50)
+        {
+            // request chunks
+            final DataArray subset = DataArray.empty();
+            for (final TLongIterator it = syncingGuilds.iterator(); subset.length() < 50; )
+            {
+                subset.add(it.next());
+                it.remove();
+            }
+            sendSyncRequest(subset);
+            syncingCount -= subset.length();
+        }
+        if (syncingCount > 0 && syncingGuilds.size() >= syncingCount)
+        {
+            final DataArray array = DataArray.empty();
+            syncingGuilds.forEach((guild) -> {
+                array.add(guild);
+                return true;
+            });
+            syncingGuilds.clear();
+            sendSyncRequest(array);
+            syncingCount = 0;
+        }
     }
 
     public void onUnavailable(long id)

@@ -30,7 +30,10 @@ This library is a helpful tool that provides the functionality to create a disco
 ## Summary
 
 Due to official statements made by the Discord developers we will no longer support unofficial features. These features
-are undocumented API endpoints or protocols that are not available to bot-accounts.
+are undocumented API endpoints or protocols that are not available to bot-accounts. We will however continue support
+for the usage of JDA through the client account type through `JDABuilder(AccountType.CLIENT)`. This does not mean
+it is encouraged or recommended to create applications such as selfbots or custom clients which are prohibited by
+the Discord Terms of Service.
 
 _Please see the [Discord docs](https://discordapp.com/developers/docs/reference) for more information about bot accounts._
 
@@ -48,7 +51,8 @@ _Please see the [Discord docs](https://discordapp.com/developers/docs/reference)
 ## UserBots and SelfBots
 
 Discord is currently prohibiting creation and usage of automated client accounts (AccountType.CLIENT).
-We have officially dropped support for client login as of version **4.2.0**!
+We however still have support to login with these accounts due to legacy support. That does not mean it is allowed or
+welcome to use.
 Note that JDA is not a good tool to build a custom discord client as it loads all servers/guilds on startup unlike
 a client which does this via lazy loading instead.
 If you need a bot, use a bot account from the [Application Dashboard](https://discordapp.com/developers/applications).
@@ -66,8 +70,12 @@ Note that this method is blocking and will cause the thread to sleep until start
 **Example**:
 
 ```java
-JDA jda = JDABuilder.createDefault("token").build();
+JDA jda = new JDABuilder("token").build();
 ```
+
+**Note**: By default this will use the `AccountType.BOT` as that is the recommended type of account.
+You can change this to use `AccountType.CLIENT`, however you will be risking account termination.
+Use `new JDABuilder(AccountType)` to change to a different account type.
 
 ### Configuration
 
@@ -77,7 +85,7 @@ Both the `JDABuilder` and the `DefaultShardManagerBuilder` allow a set of config
 
 ```java
 public static void main(String[] args) {
-    JDABuilder builder = JDABuilder.createDefault(args[0]);
+    JDABuilder builder = new JDABuilder(args[0]);
     
     // Disable parts of the cache
     builder.setDisabledCacheFlags(EnumSet.of(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE));
@@ -96,7 +104,7 @@ public static void main(String[] args) {
   and [DefaultShardManagerBuilder](https://ci.dv8tion.net/job/JDA/javadoc/net/dv8tion/jda/api/sharding/DefaultShardManagerBuilder.html)
 
 You can configure the memory usage by changing enabled `CacheFlags` on the `JDABuilder`.
-Additionally, you can change the handling of member/user cache by setting either a `ChunkingFilter`, disabling **intents**, or changing the **member cache policy**.
+Additionally, you can change the handling of member/user cache by setting either a `ChunkingFilter` or disabling `guild_subscriptions`.
 
 ```java
 public void configureMemoryUsage(JDABuilder builder) {
@@ -104,19 +112,10 @@ public void configureMemoryUsage(JDABuilder builder) {
     builder.setDisabledCacheFlags(
         EnumSet.of(CacheFlag.ACTIVITY)
     );
-
-    // Only cache members who are either in a voice channel or owner of the guild
-    builder.setMemberCachePolicy(MemberCachePolicy.VOICE.or(MemberCachePolicy.OWNER));
-
-    // Disable member chunking on startup
+    // Disable user/member cache and related events
+    builder.setGuildSubscriptionsEnabled(false);
+    // Disable member chunking on startup (ignored if guild subscriptions are turned off)
     builder.setChunkingFilter(ChunkingFilter.NONE);
-
-    // Disable presence updates and typing events
-    builder.setDisabledIntents(GatewayIntent.GUILD_PRESENCE, GatewayIntent.GUILD_MESSAGE_TYPING);
-
-    // Consider guilds with more than 50 members as "large". 
-    // Large guilds will only provide online members in their setup and thus reduce bandwidth if chunking is disabled.
-    builder.setLargeThreshold(50);
 }
 ```
 
@@ -144,7 +143,7 @@ public class ReadyListener implements EventListener
             throws LoginException, InterruptedException
     {
         // Note: It is important to register your ReadyListener before building
-        JDA jda = JDABuilder.createDefault("token")
+        JDA jda = new JDABuilder("token")
             .addEventListeners(new ReadyListener())
             .build();
 
@@ -169,7 +168,7 @@ public class MessageListener extends ListenerAdapter
     public static void main(String[] args)
             throws LoginException
     {
-        JDA jda = JDABuilder.createDefault("token").build();
+        JDA jda = new JDABuilder("token").build();
         //You can also add event listeners to the already built JDA instance
         // Note that some events may not be received if the listener is added after calling build()
         // This includes events such as the ReadyEvent
@@ -201,7 +200,7 @@ public class Bot extends ListenerAdapter
 {
     public static void main(String[] args) throws LoginException
     {
-        JDABuilder.createDefault(args[0])
+        new JDABuilder(args[0])
             .addEventListeners(new Bot())
             .setActivity(Activity.playing("Type !ping"))
             .build();
@@ -289,7 +288,7 @@ Since version **3.4.0** JDA provides a `ShardManager` which automates this build
 ```java
 public static void main(String[] args) throws Exception
 {
-    JDABuilder shardBuilder = JDABuilder.createDefault(args[0]);
+    JDABuilder shardBuilder = new JDABuilder(args[0]);
     //register your listeners here using shardBuilder.addEventListeners(...)
     shardBuilder.addEventListeners(new MessageListener());
     for (int i = 0; i < 10; i++)
@@ -306,7 +305,8 @@ public static void main(String[] args) throws Exception
 ```java
 public static void main(String[] args) throws Exception
 {
-    DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.createDefault(args[0]);
+    DefaultShardManagerBuilder builder = new DefaultShardManagerBuilder();
+    builder.setToken(args[0]);
     builder.addEventListeners(new MessageListener());
     builder.build();
 }
@@ -592,7 +592,7 @@ fun main() {
            .filter { it.message.contentRaw == "!ping" }
            .subscribe { it.channel.sendMessage("Pong!").queue() }
 
-    val jda = JDABuilder.createDefault(BOT_TOKEN)
+    val jda = JDABuilder(BOT_TOKEN)
                .setEventManager(manager)
                .build()
 }

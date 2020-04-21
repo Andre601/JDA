@@ -16,8 +16,6 @@
 
 package net.dv8tion.jda.api.managers;
 
-import net.dv8tion.jda.annotations.DeprecatedSince;
-import net.dv8tion.jda.annotations.ForRemoval;
 import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.SelfUser;
 
@@ -48,6 +46,10 @@ public interface AccountManager extends Manager<AccountManager>
     long NAME = 0x1;
     /** Used to reset the avatar field */
     long AVATAR = 0x2;
+    /** Used to reset the email field */
+    long EMAIL = 0x4;
+    /** Used to reset the password field */
+    long PASSWORD = 0x8;
 
     /**
      * The {@link net.dv8tion.jda.api.entities.SelfUser SelfUser} that will be
@@ -68,6 +70,8 @@ public interface AccountManager extends Manager<AccountManager>
      * <ul>
      *     <li>{@link #NAME}</li>
      *     <li>{@link #AVATAR}</li>
+     *     <li>{@link #EMAIL}</li>
+     *     <li>{@link #PASSWORD}</li>
      * </ul>
      *
      * @param  fields
@@ -89,6 +93,8 @@ public interface AccountManager extends Manager<AccountManager>
      * <ul>
      *     <li>{@link #NAME}</li>
      *     <li>{@link #AVATAR}</li>
+     *     <li>{@link #EMAIL}</li>
+     *     <li>{@link #PASSWORD}</li>
      * </ul>
      *
      * @param  fields
@@ -104,6 +110,9 @@ public interface AccountManager extends Manager<AccountManager>
     /**
      * Sets the username for the currently logged in account
      *
+     * <p><b>Client-Accounts ({@link net.dv8tion.jda.api.AccountType#CLIENT AccountType.CLIENT}) require the
+     * current password to be updated. See {@link #setName(String, String)}</b>
+     *
      * @param  name
      *         The new username
      *
@@ -118,7 +127,10 @@ public interface AccountManager extends Manager<AccountManager>
      */
     @Nonnull
     @CheckReturnValue
-    AccountManager setName(@Nonnull String name);
+    default AccountManager setName(@Nonnull String name)
+    {
+        return setName(name, null);
+    }
 
     /**
      * Sets the username for the currently logged in account
@@ -139,21 +151,16 @@ public interface AccountManager extends Manager<AccountManager>
      *         </ul>
      *
      * @return AccountManager for chaining convenience
-     *
-     * @deprecated This is no longer supported
      */
-    @Deprecated
-    @ForRemoval
-    @DeprecatedSince("4.2.0")
     @Nonnull
     @CheckReturnValue
-    default AccountManager setName(@Nonnull String name, @Nullable String currentPassword)
-    {
-        throw new UnsupportedOperationException();
-    }
+    AccountManager setName(@Nonnull String name, @Nullable String currentPassword);
 
     /**
      * Sets the avatar for the currently logged in account
+     *
+     * <p><b>Client-Accounts ({@link net.dv8tion.jda.api.AccountType#CLIENT AccountType.CLIENT}) require the
+     * current password to be updated. See {@link #setAvatar(net.dv8tion.jda.api.entities.Icon, String) #setAvatar(Icon, String)}</b>
      *
      * @param  avatar
      *         An {@link net.dv8tion.jda.api.entities.Icon Icon} instance representing
@@ -163,7 +170,10 @@ public interface AccountManager extends Manager<AccountManager>
      */
     @Nonnull
     @CheckReturnValue
-    AccountManager setAvatar(@Nullable Icon avatar);
+    default AccountManager setAvatar(@Nullable Icon avatar)
+    {
+        return setAvatar(avatar, null);
+    }
 
     /**
      * Sets the avatar for the currently logged in account
@@ -180,18 +190,10 @@ public interface AccountManager extends Manager<AccountManager>
      *         logged in account is from {@link net.dv8tion.jda.api.AccountType#CLIENT AccountType.CLIENT}
      *
      * @return AccountManager for chaining convenience
-     *
-     * @deprecated This is no longer supported
      */
-    @Deprecated
-    @ForRemoval
-    @DeprecatedSince("4.2.0")
     @Nonnull
     @CheckReturnValue
-    default AccountManager setAvatar(@Nullable Icon avatar, @Nullable String currentPassword)
-    {
-        throw new UnsupportedOperationException();
-    }
+    AccountManager setAvatar(@Nullable Icon avatar, @Nullable String currentPassword);
 
     /**
      * Sets the email for the currently logged in client account.
@@ -210,18 +212,10 @@ public interface AccountManager extends Manager<AccountManager>
      *         </ul>
      *
      * @return AccountManager for chaining convenience
-     *
-     * @deprecated This is no longer supported
      */
-    @Deprecated
-    @ForRemoval
-    @DeprecatedSince("4.2.0")
     @Nonnull
     @CheckReturnValue
-    default AccountManager setEmail(@Nonnull String email, @Nonnull String currentPassword)
-    {
-        throw new UnsupportedOperationException();
-    }
+    AccountManager setEmail(@Nonnull String email, @Nonnull String currentPassword);
 
     /**
      * Sets the password for the currently logged in client account.
@@ -238,16 +232,8 @@ public interface AccountManager extends Manager<AccountManager>
      *         If any of the provided passwords are {@code null} or empty
      *
      * @return AccountManager for chaining convenience
-     *
-     * @deprecated This is no longer supported
      */
-    @Deprecated
-    @ForRemoval
-    @DeprecatedSince("4.2.0")
     @Nonnull
     @CheckReturnValue
-    default AccountManager setPassword(@Nonnull String newPassword, @Nonnull String currentPassword)
-    {
-        throw new UnsupportedOperationException();
-    }
+    AccountManager setPassword(@Nonnull String newPassword, @Nonnull String currentPassword);
 }

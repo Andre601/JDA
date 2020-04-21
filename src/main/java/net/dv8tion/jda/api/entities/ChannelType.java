@@ -36,7 +36,7 @@ public enum ChannelType
      */
     VOICE(2, 1, true),
     /**
-     * A Group. (unused)
+     * A Group. {@link net.dv8tion.jda.api.AccountType#CLIENT AccountType.CLIENT} only.
      */
     GROUP(3, -1),
     /**

@@ -25,9 +25,6 @@ import javax.annotation.Nonnull;
  * <br>The filter decides based on the provided guild id whether chunking should be done
  * on guild initialization.
  *
- * <p><b>To use chunking, the {@link net.dv8tion.jda.api.requests.GatewayIntent#GUILD_MEMBERS GUILD_MEMBERS} intent must be enabled!
- * Otherwise you <u>must</u> use {@link #NONE}!</b>
- *
  * @since 4.1.0
  *
  * @see   #ALL
@@ -69,8 +66,6 @@ public interface ChunkingFilter
     static ChunkingFilter include(@Nonnull long... ids)
     {
         Checks.notNull(ids, "ID array");
-        if (ids.length == 0)
-            return NONE;
         return (guild) -> {
             for (long id : ids)
             {
@@ -97,8 +92,6 @@ public interface ChunkingFilter
     static ChunkingFilter exclude(@Nonnull long... ids)
     {
         Checks.notNull(ids, "ID array");
-        if (ids.length == 0)
-            return ALL;
         return (guild) -> {
             for (long id : ids)
             {

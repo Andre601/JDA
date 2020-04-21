@@ -109,8 +109,7 @@ public class SessionControllerAdapter implements SessionController
                     }
                     else if (response.code == 401)
                     {
-                        api.shutdownNow();
-                        throw new LoginException("The provided token is invalid!");
+                        api.verifyToken(true);
                     }
                     else
                     {
