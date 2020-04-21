@@ -16,12 +16,14 @@
 
 package net.dv8tion.jda.internal.requests;
 
+import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.requests.Request;
 import net.dv8tion.jda.api.requests.Response;
 import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.requests.ratelimit.BotRateLimiter;
+import net.dv8tion.jda.internal.requests.ratelimit.ClientRateLimiter;
 import net.dv8tion.jda.internal.utils.JDALogger;
 import net.dv8tion.jda.internal.utils.config.AuthorizationConfig;
 import okhttp3.Call;
@@ -76,7 +78,11 @@ public class Requester
 
         this.authConfig = authConfig;
         this.api = (JDAImpl) api;
-        this.rateLimiter = new BotRateLimiter(this);
+        if (authConfig.getAccountType() == AccountType.BOT)
+            rateLimiter = new BotRateLimiter(this);
+        else
+            rateLimiter = new ClientRateLimiter(this);
+        
         this.httpClient = this.api.getHttpClient();
     }
 

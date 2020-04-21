@@ -49,7 +49,6 @@ public class Request<T>
     private final Object rawBody;
     private final CaseInsensitiveMap<String, String> headers;
     private final long deadline;
-    private final boolean priority;
 
     private final String localReason;
 
@@ -58,11 +57,10 @@ public class Request<T>
 
     public Request(
             RestActionImpl<T> restAction, Consumer<? super T> onSuccess, Consumer<? super Throwable> onFailure,
-            BooleanSupplier checks, boolean shouldQueue, RequestBody body, Object rawBody, long deadline, boolean priority,
+            BooleanSupplier checks, boolean shouldQueue, RequestBody body, Object rawBody, long deadline,
             Route.CompiledRoute route, CaseInsensitiveMap<String, String> headers)
     {
         this.deadline = deadline;
-        this.priority = priority;
         this.restAction = restAction;
         this.onSuccess = onSuccess;
         if (onFailure instanceof ContextException.ContextConsumer)
@@ -171,11 +169,6 @@ public class Request<T>
     public Consumer<? super Throwable> getOnFailure()
     {
         return onFailure;
-    }
-
-    public boolean isPriority()
-    {
-        return priority;
     }
 
     public boolean isSkipped()

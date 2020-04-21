@@ -83,7 +83,7 @@ public class SessionControllerAdapter implements SessionController
     {
         Route.CompiledRoute route = Route.Misc.GATEWAY.compile();
         return new RestActionImpl<String>(api, route,
-            (response, request) -> response.getObject().getString("url")).priority().complete();
+            (response, request) -> response.getObject().getString("url")).complete();
     }
 
     @Nonnull
@@ -123,7 +123,7 @@ public class SessionControllerAdapter implements SessionController
                     request.onFailure(e);
                 }
             }
-        }.priority().complete();
+        }.complete();
     }
 
     @Nonnull

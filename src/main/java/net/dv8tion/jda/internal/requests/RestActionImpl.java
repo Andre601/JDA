@@ -65,7 +65,6 @@ public class RestActionImpl<T> implements RestAction<T>
     private final RequestBody data;
     private final BiFunction<Response, Request<T>, T> handler;
 
-    private boolean priority = false;
     private long deadline = 0;
     private Object rawData;
     private BooleanSupplier checks;
@@ -146,12 +145,6 @@ public class RestActionImpl<T> implements RestAction<T>
         this.handler = handler;
     }
 
-    public RestActionImpl<T> priority()
-    {
-        priority = true;
-        return this;
-    }
-
     @Nonnull
     @Override
     public JDA getJDA()
@@ -187,7 +180,7 @@ public class RestActionImpl<T> implements RestAction<T>
             success = DEFAULT_SUCCESS;
         if (failure == null)
             failure = DEFAULT_FAILURE;
-        api.getRequester().request(new Request<>(this, success, failure, finisher, true, data, rawData, getDeadline(), priority, route, headers));
+        api.getRequester().request(new Request<>(this, success, failure, finisher, true, data, rawData, getDeadline(), route, headers));
     }
 
     @Nonnull
@@ -199,7 +192,7 @@ public class RestActionImpl<T> implements RestAction<T>
         RequestBody data = finalizeData();
         CaseInsensitiveMap<String, String> headers = finalizeHeaders();
         BooleanSupplier finisher = getFinisher();
-        return new RestFuture<>(this, shouldQueue, finisher, data, rawData, getDeadline(), priority, route, headers);
+        return new RestFuture<>(this, shouldQueue, finisher, data, rawData, getDeadline(), route, headers);
     }
 
     @Override
