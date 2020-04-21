@@ -468,7 +468,7 @@ public class TextChannelImpl extends AbstractChannelImpl<TextChannel, TextChanne
         checkPermission(Permission.MESSAGE_MANAGE);
 
         String code = EncodingUtil.encodeReaction(unicode);
-        Route.CompiledRoute route = Route.Messages.CLEAR_EMOTE_REACTIONS.compile(getId(), messageId, code);
+        Route.CompiledRoute route = Route.Messages.CLEAR_EMOTE_REACTIONS.compile(getId(), messageId, unicode);
         return new RestActionImpl<>(getJDA(), route);
     }
 
