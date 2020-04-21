@@ -96,8 +96,6 @@ public abstract class RateLimiter
         }
     }
 
-    public void init() {}
-
     protected void shutdown()
     {
         isShutdown = true;

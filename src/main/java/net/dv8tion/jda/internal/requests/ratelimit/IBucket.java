@@ -22,5 +22,6 @@ import java.util.Queue;
 
 public interface IBucket
 {
+    String getRoute();
     Queue<Request> getRequests();
 }

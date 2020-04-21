@@ -205,7 +205,7 @@ public class ClientRateLimiter extends RateLimiter
                             if (isSkipped(it, request))
                                 continue;
                             // Blocking code because I'm lazy and client accounts are not priority
-                            Long retryAfter = requester.execute(request);
+                            Long retryAfter = requester.execute(request).get();
                             if (retryAfter != null)
                                 break;
                             else
@@ -246,6 +246,12 @@ public class ClientRateLimiter extends RateLimiter
                     api.handleEvent(new ExceptionEvent(api, err, true));
                 }
             }
+        }
+
+        @Override
+        public String getRoute()
+        {
+            return route;
         }
 
         @Override
