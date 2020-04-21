@@ -24,10 +24,8 @@ import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.dv8tion.jda.api.utils.AttachmentOption;
 import net.dv8tion.jda.internal.requests.RestActionImpl;
 import net.dv8tion.jda.internal.requests.Route;
-import net.dv8tion.jda.internal.utils.Checks;
 
 import javax.annotation.Nonnull;
-import java.io.File;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -153,17 +151,6 @@ public class PrivateChannelImpl implements PrivateChannel
     {
         checkBot();
         return PrivateChannel.super.sendFile(data, fileName, options);
-    }
-
-    @Nonnull
-    @Override
-    public MessageAction sendFile(@Nonnull File file, @Nonnull String fileName, @Nonnull AttachmentOption... options)
-    {
-        checkBot();
-        final long maxSize = getJDA().getSelfUser().getAllowedFileSize();
-        Checks.check(file == null || file.length() <= maxSize,
-                    "File may not exceed the maximum file length of %d bytes!", maxSize);
-        return PrivateChannel.super.sendFile(file, fileName, options);
     }
 
     public PrivateChannelImpl setLastMessageId(long id)
