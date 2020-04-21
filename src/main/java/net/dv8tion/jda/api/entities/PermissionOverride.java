@@ -23,7 +23,6 @@ import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.EnumSet;
 
 /**
@@ -93,7 +92,8 @@ public interface PermissionOverride extends ISnowflake
     EnumSet<Permission> getDenied();
 
     /**
-     * The {@link net.dv8tion.jda.api.JDA JDA} instance that this PermissionOverride is related to.
+     * The {@link net.dv8tion.jda.api.JDA JDA} instance that this {@link net.dv8tion.jda.api.entities.PermissionOverride PermissionOverride}
+     * is related to.
      *
      * @return Never-null {@link net.dv8tion.jda.api.JDA JDA} instance.
      */
@@ -101,24 +101,10 @@ public interface PermissionOverride extends ISnowflake
     JDA getJDA();
 
     /**
-     * This method will return the {@link net.dv8tion.jda.api.entities.IPermissionHolder PermissionHolder} of this PermissionOverride.
-     * It can be used to e. g. get the general permissions of that PermissionHolder no matter if it is a {@link net.dv8tion.jda.api.entities.Member Member} or a {@link net.dv8tion.jda.api.entities.Role Role}.
-     *
-     * <p><b>To get the concrete Member or Role, use {@link PermissionOverride#getMember()} or {@link PermissionOverride#getRole()}!</b>
-     *
-     * @return Possibly-null {@link net.dv8tion.jda.api.entities.IPermissionHolder PermissionHolder} of this PermissionOverride.
-     *
-     * @see    PermissionOverride#getRole()
-     * @see    PermissionOverride#getMember()
-     */
-    @Nullable
-    IPermissionHolder getPermissionHolder();
-
-    /**
-     * If this PermissionOverride is an override dealing with a {@link net.dv8tion.jda.api.entities.Member Member}, then
-     * this method will return the related {@link net.dv8tion.jda.api.entities.Member Member}.
+     * If this {@link net.dv8tion.jda.api.entities.PermissionOverride PermissionOverride} is an override dealing with
+     * a {@link net.dv8tion.jda.api.entities.Member Member}, then this method will return the related {@link net.dv8tion.jda.api.entities.Member Member}.
      * <br>Otherwise, this method returns {@code null}.
-     * <br>Basically: if {@link PermissionOverride#isMemberOverride()}
+     * <br>Basically: if {@link net.dv8tion.jda.api.entities.PermissionOverride#isMemberOverride()}
      * returns {@code false}, this returns {@code null}.
      *
      * @return Possibly-null related {@link net.dv8tion.jda.api.entities.Member Member}.
@@ -127,10 +113,10 @@ public interface PermissionOverride extends ISnowflake
     Member getMember();
 
     /**
-     * If this PermissionOverride is an override dealing with a {@link net.dv8tion.jda.api.entities.Role Role}, then
-     * this method will return the related {@link net.dv8tion.jda.api.entities.Role Role}.
+     * If this {@link net.dv8tion.jda.api.entities.PermissionOverride PermissionOverride} is an override dealing with
+     * a {@link net.dv8tion.jda.api.entities.Role Role}, then this method will return the related {@link net.dv8tion.jda.api.entities.Role Role}.
      * <br>Otherwise, this method returns {@code null}.
-     * <br>Basically: if {@link PermissionOverride#isRoleOverride()}
+     * Basically: if {@link net.dv8tion.jda.api.entities.PermissionOverride#isRoleOverride()}
      * returns {@code false}, this returns {@code null}.
      *
      * @return Possibly-null related {@link net.dv8tion.jda.api.entities.Role}.
@@ -139,17 +125,18 @@ public interface PermissionOverride extends ISnowflake
     Role getRole();
 
     /**
-     * The {@link net.dv8tion.jda.api.entities.GuildChannel GuildChannel} that this PermissionOverride affects.
+     * The {@link GuildChannel GuildChannel} that this {@link net.dv8tion.jda.api.entities.PermissionOverride PermissionOverride} affects.
      *
-     * @return Never-null related {@link net.dv8tion.jda.api.entities.GuildChannel GuildChannel} that this override is part of.
+     * @return Never-null related {@link GuildChannel GuildChannel} that this override is part of.
      */
     @Nonnull
     GuildChannel getChannel();
 
     /**
-     * The {@link net.dv8tion.jda.api.entities.Guild Guild} that the {@link net.dv8tion.jda.api.entities.GuildChannel GuildChannel}
+     * The {@link net.dv8tion.jda.api.entities.Guild Guild} that the {@link GuildChannel GuildChannel}
      * returned from {@link net.dv8tion.jda.api.entities.PermissionOverride#getChannel()} is a part of.
-     * By inference, this is the {@link net.dv8tion.jda.api.entities.Guild Guild} that this PermissionOverride is part of.
+     * By inference, this is the {@link net.dv8tion.jda.api.entities.Guild Guild} that this
+     * {@link net.dv8tion.jda.api.entities.PermissionOverride PermissionOverride} is part of.
      *
      * @return Never-null related {@link net.dv8tion.jda.api.entities.Guild Guild}.
      */
@@ -157,7 +144,7 @@ public interface PermissionOverride extends ISnowflake
     Guild getGuild();
 
     /**
-     * Used to determine if this PermissionOverride relates to
+     * Used to determine if this {@link net.dv8tion.jda.api.entities.PermissionOverride PermissionOverride} relates to
      * a specific {@link net.dv8tion.jda.api.entities.Member Member}.
      *
      * @return True if this override is a user override.
@@ -165,7 +152,7 @@ public interface PermissionOverride extends ISnowflake
     boolean isMemberOverride();
 
     /**
-     * Used to determine if this PermissionOverride relates to
+     * Used to determine if this {@link net.dv8tion.jda.api.entities.PermissionOverride PermissionOverride} relates to
      * a specific {@link net.dv8tion.jda.api.entities.Role Role}.
      *
      * @return True if this override is a role override.
