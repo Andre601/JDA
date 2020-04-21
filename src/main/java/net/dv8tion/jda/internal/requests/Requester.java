@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
-import java.io.InterruptedIOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Collections;
@@ -252,11 +251,6 @@ public class Requester
             apiRequest.handleResponse(new Response(lastResponse, e, rays));
             return null;
         }
-        catch (InterruptedIOException e)
-        {
-            LOG.warn("Got interrupted while executing request", e);
-            return null;
-        }
         catch (Exception e)
         {
             if (retryOnTimeout && !retried && isRetry(e))
@@ -322,9 +316,9 @@ public class Requester
         this.retryOnTimeout = retryOnTimeout;
     }
 
-    public boolean stop()
+    public void stop()
     {
-        return rateLimiter.stop();
+        rateLimiter.stop();
     }
 
     public void shutdown()

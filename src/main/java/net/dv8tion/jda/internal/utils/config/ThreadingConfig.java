@@ -63,7 +63,7 @@ public class ThreadingConfig
     public void init(@Nonnull Supplier<String> identifier)
     {
         if (this.rateLimitPool == null)
-            this.rateLimitPool = newScheduler(5, identifier, "RateLimit", false);
+            this.rateLimitPool = newScheduler(5, identifier, "RateLimit");
         if (this.gatewayPool == null)
             this.gatewayPool = newScheduler(1, identifier, "Gateway");
     }
@@ -87,12 +87,6 @@ public class ThreadingConfig
                 rateLimitPool.shutdown();
             }
         }
-    }
-
-    public void shutdownRequester()
-    {
-        if (shutdownRateLimitPool)
-            rateLimitPool.shutdown();
     }
 
     public void shutdownNow()
@@ -141,13 +135,7 @@ public class ThreadingConfig
     @Nonnull
     public static ScheduledThreadPoolExecutor newScheduler(int coreSize, Supplier<String> identifier, String baseName)
     {
-        return newScheduler(coreSize, identifier, baseName, true);
-    }
-
-    @Nonnull
-    public static ScheduledThreadPoolExecutor newScheduler(int coreSize, Supplier<String> identifier, String baseName, boolean daemon)
-    {
-        return new ScheduledThreadPoolExecutor(coreSize, new CountingThreadFactory(identifier, baseName, daemon));
+        return new ScheduledThreadPoolExecutor(coreSize, new CountingThreadFactory(identifier, baseName));
     }
 
     @Nonnull
