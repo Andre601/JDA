@@ -3488,33 +3488,11 @@ public interface Guild extends ISnowflake
      * <br>None of the provided roles may be the <u>Public Role</u> of the current Guild.
      * <br>If a role is both in {@code rolesToAdd} and {@code rolesToRemove} it will be removed.
      *
-     * <h2>Example</h2>
-     * <pre>{@code
-     * public static void promote(Member member) {
-     *     Guild guild = member.getGuild();
-     *     List<Role> pleb = guild.getRolesByName("Pleb", true); // remove all roles named "pleb"
-     *     List<Role> knight = guild.getRolesByName("Knight", true); // add all roles named "knight"
-     *     // update roles in single request
-     *     guild.modifyMemberRoles(member, knight, pleb).queue();
-     * }
-     * }</pre>
-     *
      * <h1>Warning</h1>
      * <b>This may <u>not</u> be used together with any other role add/remove/modify methods for the same Member
      * within one event listener cycle! The changes made by this require cache updates which are triggered by
      * lifecycle events which are received later. This may only be called again once the specific Member has been updated
      * by a {@link net.dv8tion.jda.api.events.guild.member.GenericGuildMemberEvent GenericGuildMemberEvent} targeting the same Member.</b>
-     *
-     * <p>This is logically equivalent to:
-     * <pre>{@code
-     * Set<Role> roles = new HashSet<>(member.getRoles());
-     * roles.addAll(rolesToAdd);
-     * roles.removeAll(rolesToRemove);
-     * RestAction<Void> action = guild.modifyMemberRoles(member, roles);
-     * }</pre>
-     *
-     * <p>You can use {@link #addRoleToMember(Member, Role)} and {@link #removeRoleFromMember(Member, Role)} to make updates
-     * independent of the cache.
      *
      * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} caused by
      * the returned {@link net.dv8tion.jda.api.requests.RestAction RestAction} include the following:
@@ -3525,6 +3503,17 @@ public interface Guild extends ISnowflake
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_MEMBER UNKNOWN_MEMBER}
      *     <br>The target Member was removed from the Guild before finishing the task</li>
      * </ul>
+     *
+     * <h2>Example</h2>
+     * <pre>{@code
+     * public static void promote(Member member) {
+     *     Guild guild = member.getGuild();
+     *     List<Role> pleb = guild.getRolesByName("Pleb", true); // remove all roles named "pleb"
+     *     List<Role> knight = guild.getRolesByName("Knight", true); // add all roles named "knight"
+     *     // update roles in single request
+     *     guild.modifyMemberRoles(member, knight, pleb).queue();
+     * }
+     * }</pre>
      *
      * @param  member
      *         The {@link net.dv8tion.jda.api.entities.Member Member} that should be modified

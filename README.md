@@ -574,7 +574,7 @@ Note that this send system creates an extra UDP-Client which causes audio receiv
 since discord identifies the sending UDP-Client as the receiver.
 
 ```java
-JDABuilder builder = JDABuilder.createDefault(BOT_TOKEN)
+JDABuilder builder = new JDABuilder(BOT_TOKEN)
     .setAudioSendFactory(new NativeAudioSendFactory());
 ```
 
