@@ -32,7 +32,9 @@ import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.requests.Route;
 import net.dv8tion.jda.internal.requests.restaction.AuditableRestActionImpl;
+import net.dv8tion.jda.internal.requests.restaction.pagination.ReactionPaginationActionImpl;
 import net.dv8tion.jda.internal.utils.Checks;
+import net.dv8tion.jda.internal.utils.EncodingUtil;
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.bag.HashBag;
@@ -226,24 +228,40 @@ public class ReceivedMessage extends AbstractMessage
         return getTextChannel().removeReactionById(getId(), unicode, user);
     }
 
+
     @Nonnull
     @Override
     public ReactionPaginationAction retrieveReactionUsers(@Nonnull Emote emote)
     {
-        return channel.retrieveReactionUsersById(id, emote);
+        Checks.notNull(emote, "Emote");
+
+        MessageReaction reaction = this.reactions.stream()
+            .filter(r -> r.getReactionEmote().isEmote() && r.getReactionEmote().getEmote().equals(emote))
+            .findFirst().orElse(null);
+
+        if (reaction == null)
+            return new ReactionPaginationActionImpl(this, String.format("%s:%s", emote, emote.getId()));
+        return new ReactionPaginationActionImpl(reaction);
     }
 
     @Nonnull
     @Override
     public ReactionPaginationAction retrieveReactionUsers(@Nonnull String unicode)
     {
-        return channel.retrieveReactionUsersById(id, unicode);
+        Checks.noWhitespace(unicode, "Emoji");
+
+        MessageReaction reaction = this.reactions.stream()
+            .filter(r -> r.getReactionEmote().isEmoji() && r.getReactionEmote().getEmoji().equals(unicode))
+            .findFirst().orElse(null);
+
+        if (reaction == null)
+            return new ReactionPaginationActionImpl(this, EncodingUtil.encodeUTF8(unicode));
+        return new ReactionPaginationActionImpl(reaction);
     }
 
     @Override
     public MessageReaction.ReactionEmote getReactionByUnicode(@Nonnull String unicode)
     {
-        Checks.notEmpty(unicode, "Emoji");
         Checks.noWhitespace(unicode, "Emoji");
 
         return this.reactions.stream()
@@ -261,6 +279,8 @@ public class ReceivedMessage extends AbstractMessage
     @Override
     public MessageReaction.ReactionEmote getReactionById(long id)
     {
+        Checks.notNull(id, "Reaction ID");
+
         return this.reactions.stream()
             .map(MessageReaction::getReactionEmote)
             .filter(r -> r.isEmote() && r.getIdLong() == id)
