@@ -419,11 +419,9 @@ public class BotRateLimiter extends RateLimiter
                     // The request went through so we can remove it
                     iterator.remove();
                 }
-                catch (Throwable ex)
+                catch (Exception ex)
                 {
                     log.error("Encountered exception trying to execute request", ex);
-                    if (ex instanceof Error)
-                        throw (Error) ex;
                     break;
                 }
             }
