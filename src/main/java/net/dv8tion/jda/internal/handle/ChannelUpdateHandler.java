@@ -371,10 +371,7 @@ public class ChannelUpdateHandler extends SocketHandler
         }
         else
         {
-            PermissionOverrideImpl impl;
-            currentOverride = impl = new PermissionOverrideImpl(channel, overrideId, isRole);
-            impl.setAllow(allow);
-            impl.setDeny(deny);
+            currentOverride = new PermissionOverrideImpl(channel, overrideId, isRole);
             channel.getOverrideMap().put(overrideId, currentOverride);
             api.handleEvent(
                 new PermissionOverrideCreateEvent(
