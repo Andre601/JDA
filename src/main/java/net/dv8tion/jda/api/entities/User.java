@@ -280,7 +280,7 @@ public interface User extends IMentionable, IFakeable
         /**
          * The readable name as used in the Discord Client.
          * 
-         * @return The readable name of this {@link net.dv8tion.jda.api.entities.User.UserFlag Flag}.
+         * @return The readable name of this {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlag}.
          */
         @Nonnull
         public String getName()
@@ -291,11 +291,11 @@ public interface User extends IMentionable, IFakeable
         /**
          * The binary offset of the flag.
          * 
-         * @return The offset that represents this {@link net.dv8tion.jda.api.entities.User.UserFlag Flag}.
+         * @return The offset that represents this {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlag}.
          */
         public int getOffset()
         {
-            return offset;
+            return this.offset;
         }
 
         /**
@@ -306,27 +306,26 @@ public interface User extends IMentionable, IFakeable
          */
         public long getRawValue()
         {
-            return raw;
+            return this.raw;
         }
 
         /**
-         * Gets the first {@link net.dv8tion.jda.api.entities.User.UserFlag Flag} relating to the provided offset.
-         * <br>If there is no {@link net.dv8tion.jda.api.entities.User.UserFlag Flag} that matches the provided offset,
-         * {@link net.dv8tion.jda.api.entities.User.UserFlag#UNKNOWN Flag.UNKNOWN} is returned.
+         * Gets the first {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlag} relating to the provided offset.
+         * <br>If there is no {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlag} that matches the provided offset,
+         * {@link net.dv8tion.jda.api.entities.User.UserFlag#UNKNOWN UserFlag.UNKNOWN} is returned.
          * 
          * @param  offset
-         *         The offset to match a {@link net.dv8tion.jda.api.entities.User.UserFlag Flag} to.
+         *         The offset to match a {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlag} to.
          *         
-         * @return {@link net.dv8tion.jda.api.entities.User.UserFlag Flag} relating to the provided offset.
+         * @return {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlag} relating to the provided offset.
          */
         @Nonnull
-        public static UserFlag getFromOffset(int offset)
+        public static UserFlag getFromOffset(long offset)
         {
             for (UserFlag flag : values())
-            {
-                if(flag.offset == offset)
+                if (flag.offset == offset)
                     return flag;
-            }
+
             return UNKNOWN;
         }
         
@@ -337,10 +336,10 @@ public interface User extends IMentionable, IFakeable
          * @param  flags
          *         The raw {@code long} representation if flags.
          *         
-         * @return Possibly-empty EnumSet of {@link UserFlag Flags}.
+         * @return Possibly-empty EnumSet of {@link UserFlag UserFlags}.
          */
         @Nonnull
-        public static EnumSet<UserFlag> getFlags(int flags)
+        public static EnumSet<UserFlag> getFlags(long flags)
         {
             final EnumSet<UserFlag> foundFlags = EnumSet.noneOf(UserFlag.class);
             
@@ -355,7 +354,7 @@ public interface User extends IMentionable, IFakeable
         }
 
         /**
-         * This is effectively the oposite of {@link #getFlags(int)}, this takes 1 or more {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}
+         * This is effectively the opposite of {@link #getFlags(long)}, this takes 1 or more {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}
          * and returns the raw offset {@code long} representation of the flags.
          * 
          * @param  flags
@@ -363,21 +362,20 @@ public interface User extends IMentionable, IFakeable
          *         
          * @return Unsigned long representing the provided flags.
          */
-        public static int getRaw(@Nonnull UserFlag... flags){
-            int raw = 0;
+        public static long rawFlagOffset(@Nonnull UserFlag... flags) {
+            long raw = 0;
+
             for (UserFlag flag : flags)
-            {
                 if (flag != null && flag != UNKNOWN)
                     raw |= flag.raw;
-            }
             
             return raw;
         }
 
         /**
-         * This is effectively the oposite of {@link #getFlags(int)}, this takes 1 or more {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}
+         * This is effectively the opposite of {@link #getFlags(long)}, this takes 1 or more {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}
          * and returns the raw offset {@code long} representation of the flags.
-         * <br>Example: {@code getRaw(EnumSet.of(Flag.STAFF, Flag.HYPESQUAD))}
+         * <br>Example: {@code getRaw(EnumSet.of(UserFlag.STAFF, UserFlag.HYPESQUAD))}
          *
          * @param  flags
          *         The Collection of flags of which to form into the raw long representation.
@@ -386,11 +384,11 @@ public interface User extends IMentionable, IFakeable
          * 
          * @see java.util.EnumSet EnumSet
          */
-        public static int getRaw(@Nonnull Collection<UserFlag> flags)
+        public static long getRaw(@Nonnull Collection<UserFlag> flags)
         {
             Checks.notNull(flags, "Flag Collection");
             
-            return getRaw(flags.toArray(EMPTY_FLAGS));
+            return rawFlagOffset(flags.toArray(EMPTY_FLAGS));
         }
     }
 }

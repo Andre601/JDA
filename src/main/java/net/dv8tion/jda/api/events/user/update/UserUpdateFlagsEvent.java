@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import java.util.EnumSet;
 
 /**
- * Indicates that the {@link net.dv8tion.jda.api.entities.User.UserFlag Flags} of a {@link net.dv8tion.jda.api.entities.User User} changed.
+ * Indicates that the {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlags} of a {@link net.dv8tion.jda.api.entities.User User} changed.
  * 
  * <p>Can be used to retrieve the User who got their flags changed and their previous flags.
  * 
@@ -25,50 +25,42 @@ import java.util.EnumSet;
  * member was updated and gives us the updated member object. In order to fire a specific event like this we
  * need to have the old member cached to compare against.
  */
-public class UserUpdateFlagsEvent extends GenericUserUpdateEvent<Integer>
+public class UserUpdateFlagsEvent extends GenericUserUpdateEvent<Long>
 {
     public static final String IDENTIFIER = "public_flags";
     
-    public UserUpdateFlagsEvent(@Nonnull JDA api, long responseNumber, @Nonnull User user, int oldFlags)
+    public UserUpdateFlagsEvent(@Nonnull JDA api, long responseNumber, @Nonnull User user, long oldFlags)
     {
         super(api, responseNumber, user, oldFlags, User.UserFlag.getRaw(user.getFlags()), IDENTIFIER);
     }
 
     /**
-     * The previous raw {@code Integer} representation of the set {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}.
-     * 
-     * @return The previous {@code Integer} representation of the {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}.
+     * @return The previous {@code Long} representation of the {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlags}.
      */
     @Nullable
-    public Integer getOldFlags()
+    public Long getOldFlags()
     {
         return getOldValue();
     }
 
     /**
-     * The previous Set of {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}.
-     * 
-     * @return The previous EnumSet of {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}.
+     * @return The previous EnumSet of {@link net.dv8tion.jda.api.entities.User.UserFlag Flags} or <code>null</code> if the user had no flags before
      */
     @Nullable
-    public EnumSet<User.UserFlag> getOlfFlagSet(){
+    public EnumSet<User.UserFlag> getOldFlagSet(){
         return previous == null ? null : User.UserFlag.getFlags(previous);
     }
 
     /**
-     * The new raw {@code Integer} representation of the set {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}.
-     * 
-     * @return The new {@code Integer} representation of the {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}.
+     * @return The new {@code Long} representation of the {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlags}.
      */
     @Nullable
-    public Integer getNewFlags(){
+    public Long getNewFlags(){
         return getNewValue();
     }
 
     /**
-     * The new Set of {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}.
-     *
-     * @return The previous EnumSet of {@link net.dv8tion.jda.api.entities.User.UserFlag Flags}.
+     * @return The new EnumSet of {@link net.dv8tion.jda.api.entities.User.UserFlag UserFlags}.
      */
     @Nullable
     public EnumSet<User.UserFlag> getNewFlagSet(){
