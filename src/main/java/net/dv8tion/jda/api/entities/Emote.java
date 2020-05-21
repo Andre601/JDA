@@ -133,6 +133,14 @@ public interface Emote extends IMentionable, IFakeable
     boolean isManaged();
 
     /**
+     * Whether this emote is available. An emote may be not available, when it was added while the Discord had a higher
+     * {@link net.dv8tion.jda.api.entities.Guild.BoostTier BoostTier} and does not longer.
+     * 
+     * @return True, if this emote is available
+     */
+    boolean isAvailable();
+
+    /**
      * The {@link net.dv8tion.jda.api.JDA JDA} instance of this Emote
      *
      * @return The JDA instance of this Emote

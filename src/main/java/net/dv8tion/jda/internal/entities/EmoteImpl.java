@@ -56,6 +56,7 @@ public class EmoteImpl implements ListedEmote
     private volatile EmoteManager manager = null;
 
     private boolean managed = false;
+    private boolean available = false;
     private boolean animated = false;
     private String name;
     private User user;
@@ -81,6 +82,7 @@ public class EmoteImpl implements ListedEmote
         this.guild = null;
         this.roles = null;
         this.fake = true;
+        this.available = true;
     }
 
     @Override
@@ -115,6 +117,12 @@ public class EmoteImpl implements ListedEmote
     public boolean isManaged()
     {
         return managed;
+    }
+
+    @Override
+    public boolean isAvailable()
+    {
+        return available;
     }
 
     @Override
@@ -206,6 +214,11 @@ public class EmoteImpl implements ListedEmote
     public EmoteImpl setManaged(boolean val)
     {
         this.managed = val;
+        return this;
+    }
+    
+    public EmoteImpl setAvailable(boolean available){
+        this.available = available;
         return this;
     }
 
