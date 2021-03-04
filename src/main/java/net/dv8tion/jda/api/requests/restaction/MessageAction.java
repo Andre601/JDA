@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Austin Keener, Michael Ritter, Florian Spieß, and the JDA contributors
+ * Copyright 2015 Austin Keener, Michael Ritter, Florian Spieß, and the JDA contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -200,7 +200,7 @@ public interface MessageAction extends RestAction<Message>, Appendable
      *         The nullable Message to apply settings from
      *
      * @throws java.lang.IllegalArgumentException
-     *         If the message contains an {@link net.dv8tion.jda.api.entities.MessageEmbed MessageEmbed}
+     *         If the message contains a {@link net.dv8tion.jda.api.entities.MessageEmbed MessageEmbed}
      *         that exceeds the sendable character limit,
      *         see {@link net.dv8tion.jda.api.entities.MessageEmbed#isSendable() MessageEmbed.isSendable()}
      *

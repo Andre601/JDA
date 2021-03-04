@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Austin Keener, Michael Ritter, Florian Spieß, and the JDA contributors
+ * Copyright 2015 Austin Keener, Michael Ritter, Florian Spieß, and the JDA contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -335,7 +335,7 @@ public interface Guild extends ISnowflake
      * the returned {@link net.dv8tion.jda.api.requests.RestAction RestAction} include the following:
      * <ul>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS MISSING_PERMISSIONS}
-     *     <br>The ban list cannot be fetched due to a permission discrepancy</li>
+     *     <br>The vanity url cannot be fetched due to a permission discrepancy</li>
      * </ul>
      *
      * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
@@ -403,6 +403,9 @@ public interface Guild extends ISnowflake
 
     /**
      * The preferred locale for this guild.
+     * <br>If the guild doesn't have the COMMUNITY feature, this returns the default.
+     *
+     * <br>Default: {@link Locale#US}
      *
      * @return The preferred {@link Locale} for this guild
      */
@@ -883,7 +886,7 @@ public interface Guild extends ISnowflake
 
     /**
      * Gets a list of all {@link net.dv8tion.jda.api.entities.Member Members} who have the same effective name as the one provided.
-     * <br>This compares against {@link net.dv8tion.jda.api.entities.Member#getEffectiveName()}}.
+     * <br>This compares against {@link net.dv8tion.jda.api.entities.Member#getEffectiveName()}.
      * <br>If there are no {@link net.dv8tion.jda.api.entities.Member Members} with the provided name, then this returns an empty list.
      *
      * <p>This will only check cached members!
@@ -2880,7 +2883,7 @@ public interface Guild extends ISnowflake
      *         <ul>
      *             <li>If includePresence is {@code true} and the GUILD_PRESENCES intent is disabled</li>
      *             <li>If the input contains null</li>
-     *             <li>If the input is more than 100 IDs</li>
+     *             <li>If the input is more than 100 users</li>
      *         </ul>
      *
      * @return {@link Task} handle for the request
